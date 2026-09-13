@@ -185,7 +185,7 @@
 ---
 
 #### 🔷 PBI-014: Git Repository Setup & Production Environment Configuration
-* **Status:** 🟡 **IN PROGRESS**
+* **Status:** 🟢 **DONE**
 * **Priority:** High (P1)
 * **Estimation:** 2 Story Points
 * **User Story:**
@@ -193,15 +193,15 @@
   > ฉันต้องการ **เตรียม Git Repository, ไฟล์ `.gitignore`, และไฟล์ `.env.example` ให้พร้อมสำหรับการนำโค้ดขึ้น GitHub**  
   > เพื่อที่ **โค้ดจะพร้อมสำหรับการต่อเชื่อมกับ Vercel ได้อย่างปลอดภัย ไม่มีข้อมูลหลุด**
 * **Acceptance Criteria (DoD):**
-  - [ ] สร้างไฟล์ `.gitignore` ที่ถูกต้อง ไม่เอาไฟล์ชั่วคราว, build cache, หรือ node_modules ขึ้น Git
-  - [ ] สร้างไฟล์ `.env.example` เพื่อเป็นคู่มือในการใส่ Key บน Vercel
-  - [ ] Initialize Git repository ในโฟลเดอร์โปรเจกต์ และทำ Initial Commit
-  - [ ] จัดเตรียมคำสั่งสำหรับ Push ขึ้น GitHub Repository
+  - [x] สร้างไฟล์ `.gitignore` ที่ถูกต้อง ไม่เอาไฟล์ชั่วคราว, build cache, หรือ node_modules ขึ้น Git
+  - [x] สร้างไฟล์ `.env.example` เพื่อเป็นคู่มือในการใส่ Key บน Vercel
+  - [x] Initialize Git repository ในโฟลเดอร์โปรเจกต์ และทำ Initial Commit
+  - [x] จัดเตรียมคำสั่งสำหรับ Push ขึ้น GitHub Repository
 
 ---
 
 #### 🔷 PBI-015: 1-Click Vercel Deployment & 24/7 Mobile Cloud Sync Verification
-* **Status:** ⚪ **TODO**
+* **Status:** 🟡 **IN PROGRESS**
 * **Priority:** High (P1)
 * **Estimation:** 3 Story Points
 * **User Story:**
