@@ -3,7 +3,11 @@ import path from 'path';
 import { Redis } from '@upstash/redis';
 import { Quest, RewardItem, RedeemedTicket, DailyHistory, BodyMetricRecord } from '@/types';
 
-const DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
+// Use /tmp on Vercel/serverless where filesystem is read-only, otherwise use src/data/db.json
+const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
+const DB_PATH = isServerless
+  ? path.join('/tmp', 'habitfit_db.json')
+  : path.join(process.cwd(), 'src', 'data', 'db.json');
 
 // Initialize Upstash Redis if environment variables are provided (e.g. on Vercel)
 const redis =

@@ -104,7 +104,7 @@ export default function Navbar() {
               sound.playClick();
               dispatch(setSyncModalOpen(true));
             }}
-            className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${
               isRealtimeSyncing
                 ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300'
                 : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
@@ -112,7 +112,7 @@ export default function Navbar() {
             title={`รหัส PIN สำหรับซิงก์ (${isRealtimeSyncing ? 'กำลังซิงก์...' : 'ซิงก์ล่าสุด: ' + (lastSyncTime || 'เมื่อสักครู่')})`}
           >
             <span className={`w-2 h-2 rounded-full ${isRealtimeSyncing ? 'bg-emerald-400 animate-ping' : 'bg-emerald-500'}`} />
-            <span>PIN: <strong className="text-zinc-200">{pin}</strong></span>
+            <span>PIN: <strong className="text-zinc-200">{pin || '...'}</strong></span>
           </button>
         </div>
       </div>

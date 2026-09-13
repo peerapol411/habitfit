@@ -107,16 +107,38 @@ export default function SyncModal() {
           )}
 
           <div className="mt-4 flex items-center gap-2 text-xs text-zinc-400">
-            <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-            <span>เชื่อมต่อ Wi-Fi เดียวกัน แล้วเปิดกล้องมือถือสแกน</span>
+            <Wifi className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            {networkHost.includes('localhost') ? (
+              <span className="text-amber-400/90 text-[11px]">
+                กำลังรันบน Localhost: ให้เปิดแอปบนมือถือแล้วนำ PIN ด้านล่างไปกรอก หรือ Deploy บน Vercel เพื่อสแกนได้ทันที
+              </span>
+            ) : (
+              <span>เปิดกล้องมือถือสแกน QR Code เพื่อจับคู่อัตโนมัติ</span>
+            )}
           </div>
+        </div>
+
+        {/* Sync Instructions Guide Card */}
+        <div className="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs space-y-1.5 mb-4">
+          <div className="font-semibold text-emerald-400 flex items-center gap-1.5">
+            <span>💡 วิธีจับคู่ซิงก์ระหว่างเครื่อง (ง่ายที่สุดใน 5 วินาที)</span>
+          </div>
+          <p className="text-zinc-300 leading-relaxed">
+            1. ดูรหัส PIN บนเครื่องหลักของคุณ (เช่น <strong className="text-white font-mono">{pin}</strong>)
+          </p>
+          <p className="text-zinc-300 leading-relaxed">
+            2. นำรหัส PIN นี้ไปใส่ในช่อง <strong>"เชื่อมต่อด้วย PIN อื่น"</strong> บนมือถือของคุณ แล้วกดเชื่อมต่อ
+          </p>
+          <p className="text-zinc-400 text-[11px] leading-relaxed">
+            ทั้งสองเครื่องจะมี PIN เดียวกัน และทุกครั้งที่ติ๊กเควสต์ ข้อมูลจะซิงก์ตรงกันแบบ Real-time ทันที!
+          </p>
         </div>
 
         {/* PIN Section */}
         <div className="space-y-4">
           <div>
             <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-              รหัส PIN ประจำตัวของคุณ
+              รหัส PIN ประจำตัวของเครื่องนี้
             </label>
             <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-950 border border-zinc-800">
               <span className="font-mono text-base font-bold text-emerald-400 tracking-wider">
@@ -144,12 +166,12 @@ export default function SyncModal() {
           {/* Connect other PIN */}
           <form onSubmit={handleConnectPin} className="pt-2 border-t border-zinc-800">
             <label className="block text-[11px] font-medium text-zinc-400 mb-1.5">
-              เชื่อมต่อด้วย PIN อื่น
+              เชื่อมต่อด้วย PIN อื่น (จับคู่กับเครื่องของคุณ)
             </label>
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="เช่น FIT-8821"
+                placeholder="กรอก PIN เช่น FIT-8821"
                 value={inputPin}
                 onChange={(e) => setInputPin(e.target.value)}
                 className="flex-1 px-3.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder-zinc-500"

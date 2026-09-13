@@ -14,12 +14,14 @@ export async function GET(req: Request) {
   if (!record) {
     return NextResponse.json({
       found: false,
+      cloudActive: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
       message: `ไม่พบข้อมูลสำหรับ PIN: ${pin.toUpperCase()}`,
-    }, { status: 404 });
+    }, { status: 200 });
   }
 
   return NextResponse.json({
     found: true,
+    cloudActive: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
     pin: record.pin,
     coins: record.coins,
     totalCoinsEarned: record.totalCoinsEarned,

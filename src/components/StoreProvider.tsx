@@ -315,7 +315,7 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
               }
             })
             .catch(() => {});
-        }, 1200);
+        }, 400);
       } catch (err) {
         console.error('Failed to auto-save store:', err);
       }
