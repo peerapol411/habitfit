@@ -17,11 +17,26 @@ import {
 import { sound } from '@/lib/audioService';
 import { Quest, RewardItem, RedeemedTicket, DailyHistory, BodyMetricRecord } from '@/types';
 
+function serializeBusinessData(state: any): string {
+  if (!state) return '';
+  return JSON.stringify({
+    q: (state.quest?.quests || []).map((q: any) => [q.id, q.completed]),
+    c: state.wallet?.coins,
+    e: state.wallet?.totalCoinsEarned,
+    t: (state.wallet?.tickets || []).map((t: any) => [t.id, t.isUsed]),
+    r: (state.wallet?.rewards || []).map((r: any) => [r.id, r.timesRedeemed]),
+    h: state.settings?.history,
+    m: (state.metrics?.records || []).map((m: any) => [m.id, m.weightKg]),
+  });
+}
+
 function AppInitializer({ children }: { children: React.ReactNode }) {
   const isHydrated = useRef(false);
   const lastKnownServerUpdatedAt = useRef<string | null>(null);
-  const ignoreAutoSaveUntil = useRef<number>(0);
   const isSyncingInFlight = useRef<boolean>(false);
+  const isApplyingRemoteUpdate = useRef<boolean>(false);
+  const lastLocalChangeTime = useRef<number>(0);
+  const lastSyncedHash = useRef<string>('');
 
   useEffect(() => {
     if (isHydrated.current) return;
@@ -101,6 +116,9 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
         store.dispatch(setSoundEnabled(soundOn));
         sound.setMuted(!soundOn);
       }
+
+      // Initial hash after local hydration
+      lastSyncedHash.current = serializeBusinessData(store.getState());
     } catch (err) {
       console.error('LocalStorage hydration error:', err);
     }
@@ -111,6 +129,9 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
     // 3. Heartbeat Real-time Sync Engine
     const checkServerSync = async () => {
       if (isSyncingInFlight.current) return;
+      // Do not poll or overwrite if the user just interacted within 1500ms
+      if (Date.now() - lastLocalChangeTime.current < 1500) return;
+
       const state = store.getState();
       const currentPin = state.settings.pin || activePin;
       if (!currentPin) return;
@@ -126,54 +147,66 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
               ? new Date(lastKnownServerUpdatedAt.current).getTime()
               : 0;
 
+            // Protect against race condition: if user touched UI while fetch was in-flight
+            if (Date.now() - lastLocalChangeTime.current < 1500) {
+              return;
+            }
+
             if (serverTime > lastTime) {
               lastKnownServerUpdatedAt.current = data.updatedAt;
-              ignoreAutoSaveUntil.current = Date.now() + 1000;
+              isApplyingRemoteUpdate.current = true;
 
-              if (data.quests) store.dispatch(setQuestsState(data.quests as Quest[]));
-              if (data.coins !== undefined) {
-                store.dispatch(
-                  setWalletState({
-                    coins: data.coins,
-                    totalCoinsEarned: data.totalCoinsEarned || data.coins,
-                    rewards: data.rewards || [],
-                    tickets: data.tickets || [],
-                  })
-                );
-              }
-              if (data.history) {
-                let cleanServerHistory = data.history || {};
-                const sEntries = Object.values(cleanServerHistory) as DailyHistory[];
-                if (
-                  sEntries.some(
-                    (e) =>
-                      e.completedQuestIds &&
-                      e.completedQuestIds.length === 2 &&
-                      e.completedQuestIds[0] === 'q-easy-1' &&
-                      e.completedQuestIds[1] === 'q-med-2'
-                  )
-                ) {
-                  cleanServerHistory = {};
+              try {
+                if (data.quests) store.dispatch(setQuestsState(data.quests as Quest[]));
+                if (data.coins !== undefined) {
+                  store.dispatch(
+                    setWalletState({
+                      coins: data.coins,
+                      totalCoinsEarned: data.totalCoinsEarned || data.coins,
+                      rewards: data.rewards || [],
+                      tickets: data.tickets || [],
+                    })
+                  );
                 }
-                store.dispatch(
-                  setSettingsState({
-                    pin: data.pin,
-                    streak: 0,
-                    lastActiveDate: data.lastActiveDate || new Date().toISOString().split('T')[0],
-                    history: cleanServerHistory,
-                  })
-                );
-              }
-              if (data.metrics) {
-                const cleanMetrics = (data.metrics as BodyMetricRecord[]).filter(
-                  (m) => !m.id?.startsWith('metric-init')
-                );
-                store.dispatch(
-                  setMetricsState({
-                    records: cleanMetrics,
-                    userHeightCm: data.userHeightCm,
-                  })
-                );
+                if (data.history) {
+                  let cleanServerHistory = data.history || {};
+                  const sEntries = Object.values(cleanServerHistory) as DailyHistory[];
+                  if (
+                    sEntries.some(
+                      (e) =>
+                        e.completedQuestIds &&
+                        e.completedQuestIds.length === 2 &&
+                        e.completedQuestIds[0] === 'q-easy-1' &&
+                        e.completedQuestIds[1] === 'q-med-2'
+                    )
+                  ) {
+                    cleanServerHistory = {};
+                  }
+                  store.dispatch(
+                    setSettingsState({
+                      pin: data.pin,
+                      streak: 0,
+                      lastActiveDate: data.lastActiveDate || new Date().toISOString().split('T')[0],
+                      history: cleanServerHistory,
+                    })
+                  );
+                }
+                if (data.metrics) {
+                  const cleanMetrics = (data.metrics as BodyMetricRecord[]).filter(
+                    (m) => !m.id?.startsWith('metric-init')
+                  );
+                  store.dispatch(
+                    setMetricsState({
+                      records: cleanMetrics,
+                      userHeightCm: data.userHeightCm,
+                    })
+                  );
+                }
+
+                // Update hash to prevent echo save
+                lastSyncedHash.current = serializeBusinessData(store.getState());
+              } finally {
+                isApplyingRemoteUpdate.current = false;
               }
 
               store.dispatch(setRealtimeSyncing(true));
@@ -182,7 +215,7 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
 
               setTimeout(() => {
                 store.dispatch(setRealtimeSyncing(false));
-              }, 1200);
+              }, 800);
             }
           } else if (!data.found && !lastKnownServerUpdatedAt.current) {
             // First time registration on server
@@ -198,6 +231,7 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
 
     const triggerImmediateServerSave = () => {
       const state = store.getState();
+      lastSyncedHash.current = serializeBusinessData(state);
       fetch('/api/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -279,10 +313,20 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
         localStorage.setItem('habitfit_sound_enabled', String(state.settings.soundEnabled));
         sound.setMuted(!state.settings.soundEnabled);
 
-        // Guard against saving remote updates back to server
-        if (Date.now() < ignoreAutoSaveUntil.current) {
+        // If we are currently applying a remote server update, DO NOT save back
+        if (isApplyingRemoteUpdate.current) {
           return;
         }
+
+        // Compare business data hash: If only UI changed (modal, audio, sync indicator), DO NOT POST
+        const currentHash = serializeBusinessData(state);
+        if (currentHash === lastSyncedHash.current) {
+          return;
+        }
+
+        // User genuinely made a local change (e.g. check or uncheck quest)
+        lastLocalChangeTime.current = Date.now();
+        lastSyncedHash.current = currentHash;
 
         if (saveTimeout) clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
@@ -315,7 +359,7 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
               }
             })
             .catch(() => {});
-        }, 400);
+        }, 250);
       } catch (err) {
         console.error('Failed to auto-save store:', err);
       }
