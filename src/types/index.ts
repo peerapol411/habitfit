@@ -35,9 +35,17 @@ export interface RedeemedTicket {
   usedAt: string | null;
 }
 
+export interface CompletedQuestDetail {
+  id: string;
+  title: string;
+  difficulty: Difficulty;
+  rewardCoins: number;
+}
+
 export interface DailyHistory {
   date: string; // YYYY-MM-DD
   completedQuestIds: string[];
+  completedQuests?: CompletedQuestDetail[];
   coinsEarned: number;
   questsCompletedCount: number;
 }

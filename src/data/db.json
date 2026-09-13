@@ -1,3 +1,166 @@
 {
-  "users": {}
+  "users": {
+    "FIT-1186": {
+      "pin": "FIT-1186",
+      "coins": 0,
+      "totalCoinsEarned": 0,
+      "streak": 0,
+      "lastActiveDate": "2026-09-13",
+      "quests": [
+        {
+          "id": "q-easy-1",
+          "title": "ดื่มน้ำเปล่า 2,000 มล.",
+          "description": "จิบน้ำเปล่าสะอาดตลอดวัน ช่วยกระตุ้นระบบเผาผลาญและระบบขับถ่าย",
+          "difficulty": "easy",
+          "rewardCoins": 15,
+          "completed": false,
+          "targetCount": 2000,
+          "unit": "มล."
+        },
+        {
+          "id": "q-easy-2",
+          "title": "เดินสะสม 4,000 ก้าว",
+          "description": "ขยับร่างกาย เดินเล่น หรือเดินขึ้นบันไดสะสมให้ครบ 4,000 ก้าว",
+          "difficulty": "easy",
+          "rewardCoins": 20,
+          "completed": false,
+          "targetCount": 4000,
+          "unit": "ก้าว"
+        },
+        {
+          "id": "q-easy-3",
+          "title": "ยืดเหยียดกล้ามเนื้อ 10 นาที",
+          "description": "Stretching คลายกล้ามเนื้อคอ บ่า ไหล่ และหลัง ลดอาการออฟฟิศซินโดรม",
+          "difficulty": "easy",
+          "rewardCoins": 15,
+          "completed": false,
+          "targetCount": 10,
+          "unit": "นาที"
+        },
+        {
+          "id": "q-med-1",
+          "title": "ดื่มน้ำสะอาด 2.5 ลิตร",
+          "description": "ดื่มน้ำสะอาด 2,500 มล. ช่วยให้ผิวพรรณสดใส ลดอาการบวมน้ำ",
+          "difficulty": "medium",
+          "rewardCoins": 25,
+          "completed": false,
+          "targetCount": 2500,
+          "unit": "มล."
+        },
+        {
+          "id": "q-med-2",
+          "title": "เดินเร็วหรือวิ่งเบาๆ 7,000 ก้าว",
+          "description": "คาร์ดิโอระดับเบิร์นไขมันต่อเนื่อง สะสมให้ครบ 7,000 ก้าว",
+          "difficulty": "medium",
+          "rewardCoins": 35,
+          "completed": false,
+          "targetCount": 7000,
+          "unit": "ก้าว"
+        },
+        {
+          "id": "q-med-3",
+          "title": "สควอท (Squats) 30 ครั้ง",
+          "description": "กระชับต้นขาและสะโพก เสริมเตาเผาผลาญไขมันชิ้นใหญ่ที่สุดของร่างกาย",
+          "difficulty": "medium",
+          "rewardCoins": 35,
+          "completed": false,
+          "targetCount": 30,
+          "unit": "ครั้ง"
+        },
+        {
+          "id": "q-hard-1",
+          "title": "วิดพื้นมาตรฐาน 40 ครั้ง",
+          "description": "แบ่งเซ็ตวิดพื้น เสริมสร้างกล้ามเนื้ออก แขน และแกนกลางลำตัว",
+          "difficulty": "hard",
+          "rewardCoins": 55,
+          "completed": false,
+          "targetCount": 40,
+          "unit": "ครั้ง"
+        },
+        {
+          "id": "q-hard-2",
+          "title": "สควอทเข้มข้น 60 ครั้ง",
+          "description": "บอดี้เวทเข้มข้น แบ่งทำ 3-4 เซ็ต เซ็ตละ 15-20 ครั้ง",
+          "difficulty": "hard",
+          "rewardCoins": 60,
+          "completed": false,
+          "targetCount": 60,
+          "unit": "ครั้ง"
+        },
+        {
+          "id": "q-hard-3",
+          "title": "พิชิต 10,000 ก้าว หรือ วิ่ง 5 กม.",
+          "description": "เผาผลาญแคลอรีขั้นสูง ด้วยการเดินเร็ว 10,000 ก้าว หรือวิ่งระยะ 5 กม.",
+          "difficulty": "hard",
+          "rewardCoins": 75,
+          "completed": false,
+          "targetCount": 10000,
+          "unit": "ก้าว"
+        },
+        {
+          "id": "q-hard-4",
+          "title": "ออกกำลังกายต่อเนื่อง 40 นาที",
+          "description": "เวทเทรนนิ่ง ฟิตเนส โยคะ หรือปั่นจักรยานต่อเนื่องอย่างน้อย 40 นาที",
+          "difficulty": "hard",
+          "rewardCoins": 70,
+          "completed": false,
+          "targetCount": 40,
+          "unit": "นาที"
+        }
+      ],
+      "rewards": [
+        {
+          "id": "rew-1",
+          "title": "ดูซีรีส์ / YouTube 1 ตอน (1 ชม.)",
+          "description": "พักสายตาและผ่อนคลายกับคอนเทนต์ที่ชอบ 1 ตอนเต็มๆ โดยไม่รู้สึกผิด",
+          "costCoins": 50,
+          "icon": "tv",
+          "category": "leisure",
+          "timesRedeemed": 0
+        },
+        {
+          "id": "rew-2",
+          "title": "กาแฟแก้วโปรด / ชานมหวานน้อย 1 แก้ว",
+          "description": "ให้รางวัลตัวเองด้วยเครื่องดื่มแก้วโปรด ดื่มอย่างมีสติและมีความสุข",
+          "costCoins": 120,
+          "icon": "coffee",
+          "category": "food",
+          "timesRedeemed": 0
+        },
+        {
+          "id": "rew-3",
+          "title": "ตั๋วนอนตื่นสายในวันหยุด 1 วัน",
+          "description": "สิทธิ์นอนตื่นสายโดยไม่ต้องตั้งนาฬิกาปลุก ชาร์จพลังงานให้เต็มที่",
+          "costCoins": 200,
+          "icon": "bed",
+          "category": "rest",
+          "timesRedeemed": 0
+        },
+        {
+          "id": "rew-4",
+          "title": "เล่นเกมมาราธอน 2 ชั่วโมง",
+          "description": "เล่นเกมโปรดแบบมาราธอน 2 ชม. เต็ม ปลดปล่อยความเครียดจากการทำงาน",
+          "costCoins": 350,
+          "icon": "gamepad",
+          "category": "leisure",
+          "timesRedeemed": 0
+        },
+        {
+          "id": "rew-5",
+          "title": "งบช้อปปิ้งของที่อยากได้ / มื้อพิเศษ",
+          "description": "ปลดล็อกสิทธิ์ซื้อของขวัญให้ตัวเอง หรือทานอาหารมื้อพิเศษเพื่อฉลองความพยายาม",
+          "costCoins": 800,
+          "icon": "shopping-bag",
+          "category": "shopping",
+          "timesRedeemed": 0
+        }
+      ],
+      "tickets": [],
+      "history": {},
+      "metrics": [],
+      "userHeightCm": 170,
+      "createdAt": "2026-09-13T15:33:08.241Z",
+      "updatedAt": "2026-09-13T15:33:08.241Z"
+    }
+  }
 }

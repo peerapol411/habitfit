@@ -24,7 +24,15 @@ export default function QuestCard({ quest, onEdit }: QuestCardProps) {
       sound.playComplete();
       dispatch(toggleQuest(quest.id));
       dispatch(addCoins(quest.rewardCoins));
-      dispatch(recordDailyHistory({ date: today, questId: quest.id, coins: quest.rewardCoins }));
+      dispatch(
+        recordDailyHistory({
+          date: today,
+          questId: quest.id,
+          coins: quest.rewardCoins,
+          title: quest.title,
+          difficulty: quest.difficulty,
+        })
+      );
 
       // Subtle confetti burst for hard quests
       if (quest.difficulty === 'hard') {

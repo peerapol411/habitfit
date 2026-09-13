@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DailyHistory } from '@/types';
+import { DailyHistory, Difficulty } from '@/types';
 
 interface SettingsState {
   pin: string;
@@ -76,21 +76,39 @@ export const settingsSlice = createSlice({
     setLastSyncTime: (state, action: PayloadAction<string>) => {
       state.lastSyncTime = action.payload;
     },
-    checkAndProcessStreak: (state) => {
-      state.streak = calculateStreak(state.history);
-    },
-    recordDailyHistory: (state, action: PayloadAction<{ date: string; questId: string; coins: number }>) => {
-      const { date, questId, coins } = action.payload;
+    recordDailyHistory: (
+      state,
+      action: PayloadAction<{
+        date: string;
+        questId: string;
+        coins: number;
+        title?: string;
+        difficulty?: Difficulty;
+      }>
+    ) => {
+      const { date, questId, coins, title, difficulty } = action.payload;
+      const questDetail = {
+        id: questId,
+        title: title || 'เควสต์ออกกำลังกาย',
+        difficulty: difficulty || 'easy',
+        rewardCoins: coins,
+      };
+
       if (!state.history[date]) {
         state.history[date] = {
           date,
           completedQuestIds: [questId],
+          completedQuests: [questDetail],
           coinsEarned: coins,
           questsCompletedCount: 1,
         };
       } else {
         if (!state.history[date].completedQuestIds.includes(questId)) {
           state.history[date].completedQuestIds.push(questId);
+          if (!state.history[date].completedQuests) {
+            state.history[date].completedQuests = [];
+          }
+          state.history[date].completedQuests.push(questDetail);
           state.history[date].coinsEarned += coins;
           state.history[date].questsCompletedCount += 1;
         }
@@ -102,12 +120,18 @@ export const settingsSlice = createSlice({
       const { date, questId, coins } = action.payload;
       if (state.history[date]) {
         state.history[date].completedQuestIds = state.history[date].completedQuestIds.filter((id) => id !== questId);
+        if (state.history[date].completedQuests) {
+          state.history[date].completedQuests = state.history[date].completedQuests.filter((q) => q.id !== questId);
+        }
         state.history[date].coinsEarned = Math.max(0, state.history[date].coinsEarned - coins);
         state.history[date].questsCompletedCount = state.history[date].completedQuestIds.length;
         if (state.history[date].questsCompletedCount === 0) {
           delete state.history[date];
         }
       }
+      state.streak = calculateStreak(state.history);
+    },
+    checkAndProcessStreak: (state) => {
       state.streak = calculateStreak(state.history);
     },
     setSettingsState: (
