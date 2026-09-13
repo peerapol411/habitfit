@@ -30,6 +30,22 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
     // 1. Hydrate from LocalStorage
     let activePin = '';
     try {
+      // Check PIN from URL query param or LocalStorage first
+      const urlParams = new URLSearchParams(window.location.search);
+      const pinFromUrl = urlParams.get('pin');
+      const existingPin = localStorage.getItem('habitfit_pin');
+
+      if (pinFromUrl) {
+        activePin = pinFromUrl.toUpperCase();
+        localStorage.setItem('habitfit_pin', activePin);
+      } else if (existingPin && existingPin !== 'FIT-1001') {
+        activePin = existingPin;
+      } else {
+        activePin = `FIT-${Math.floor(1000 + Math.random() * 9000)}`;
+        localStorage.setItem('habitfit_pin', activePin);
+      }
+      store.dispatch(setPin(activePin));
+
       const savedQuests = localStorage.getItem('habitfit_quests');
       if (savedQuests) {
         store.dispatch(setQuestsState(JSON.parse(savedQuests)));
@@ -42,12 +58,41 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
 
       const savedSettings = localStorage.getItem('habitfit_settings');
       if (savedSettings) {
-        store.dispatch(setSettingsState(JSON.parse(savedSettings)));
+        const parsed = JSON.parse(savedSettings);
+        let cleanHistory = parsed.history || {};
+        const entries = Object.values(cleanHistory) as DailyHistory[];
+        const hasMockStructure = entries.some(
+          (e) =>
+            e.completedQuestIds &&
+            e.completedQuestIds.length === 2 &&
+            e.completedQuestIds[0] === 'q-easy-1' &&
+            e.completedQuestIds[1] === 'q-med-2'
+        );
+        if (hasMockStructure) {
+          cleanHistory = {};
+        }
+        store.dispatch(
+          setSettingsState({
+            pin: activePin,
+            streak: 0,
+            lastActiveDate: parsed.lastActiveDate || '',
+            history: cleanHistory,
+          })
+        );
       }
 
       const savedMetrics = localStorage.getItem('habitfit_metrics');
       if (savedMetrics) {
-        store.dispatch(setMetricsState(JSON.parse(savedMetrics)));
+        const parsed = JSON.parse(savedMetrics);
+        const cleanRecords = (parsed.records || []).filter(
+          (r: BodyMetricRecord) => !r.id?.startsWith('metric-init')
+        );
+        store.dispatch(
+          setMetricsState({
+            records: cleanRecords,
+            userHeightCm: parsed.userHeightCm || 170,
+          })
+        );
       }
 
       const savedSound = localStorage.getItem('habitfit_sound_enabled');
@@ -56,19 +101,6 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
         store.dispatch(setSoundEnabled(soundOn));
         sound.setMuted(!soundOn);
       }
-
-      // Check PIN from URL query param or LocalStorage
-      const urlParams = new URLSearchParams(window.location.search);
-      const pinFromUrl = urlParams.get('pin');
-
-      if (pinFromUrl) {
-        activePin = pinFromUrl.toUpperCase();
-        localStorage.setItem('habitfit_pin', activePin);
-      } else {
-        activePin = localStorage.getItem('habitfit_pin') || `FIT-${Math.floor(1000 + Math.random() * 9000)}`;
-        localStorage.setItem('habitfit_pin', activePin);
-      }
-      store.dispatch(setPin(activePin));
     } catch (err) {
       console.error('LocalStorage hydration error:', err);
     }
@@ -110,19 +142,35 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
                 );
               }
               if (data.history) {
+                let cleanServerHistory = data.history || {};
+                const sEntries = Object.values(cleanServerHistory) as DailyHistory[];
+                if (
+                  sEntries.some(
+                    (e) =>
+                      e.completedQuestIds &&
+                      e.completedQuestIds.length === 2 &&
+                      e.completedQuestIds[0] === 'q-easy-1' &&
+                      e.completedQuestIds[1] === 'q-med-2'
+                  )
+                ) {
+                  cleanServerHistory = {};
+                }
                 store.dispatch(
                   setSettingsState({
                     pin: data.pin,
-                    streak: data.streak || 1,
+                    streak: 0,
                     lastActiveDate: data.lastActiveDate || new Date().toISOString().split('T')[0],
-                    history: data.history || {},
+                    history: cleanServerHistory,
                   })
                 );
               }
               if (data.metrics) {
+                const cleanMetrics = (data.metrics as BodyMetricRecord[]).filter(
+                  (m) => !m.id?.startsWith('metric-init')
+                );
                 store.dispatch(
                   setMetricsState({
-                    records: data.metrics,
+                    records: cleanMetrics,
                     userHeightCm: data.userHeightCm,
                   })
                 );

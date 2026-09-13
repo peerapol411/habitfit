@@ -7,28 +7,7 @@ interface MetricsState {
 }
 
 const initialState: MetricsState = {
-  records: [
-    {
-      id: 'metric-init-1',
-      date: new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0],
-      weightKg: 68.5,
-      heightCm: 170,
-      waistInch: 31.5,
-      bmi: 23.7,
-      notes: 'บันทึกเริ่มต้นสัปดาห์ก่อน',
-      createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-    },
-    {
-      id: 'metric-init-2',
-      date: new Date().toISOString().split('T')[0],
-      weightKg: 67.8,
-      heightCm: 170,
-      waistInch: 31.0,
-      bmi: 23.5,
-      notes: 'ชั่งตอนเช้าหลังตื่นนอน',
-      createdAt: new Date().toISOString(),
-    },
-  ],
+  records: [],
   userHeightCm: 170,
 };
 

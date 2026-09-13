@@ -12,38 +12,46 @@ interface SettingsState {
   history: Record<string, DailyHistory>;
 }
 
-const getInitialHistory = (): Record<string, DailyHistory> => {
-  const result: Record<string, DailyHistory> = {};
-  const mockActivity = [
-    { daysAgo: 5, count: 2, coins: 50 },
-    { daysAgo: 4, count: 3, coins: 75 },
-    { daysAgo: 3, count: 1, coins: 25 },
-    { daysAgo: 2, count: 4, coins: 110 },
-    { daysAgo: 1, count: 3, coins: 85 },
-  ];
-  mockActivity.forEach((item) => {
-    const d = new Date();
-    d.setDate(d.getDate() - item.daysAgo);
-    const dateStr = d.toISOString().split('T')[0];
-    result[dateStr] = {
-      date: dateStr,
-      completedQuestIds: ['q-easy-1', 'q-med-2'],
-      coinsEarned: item.coins,
-      questsCompletedCount: item.count,
-    };
-  });
-  return result;
-};
+export function calculateStreak(history: Record<string, DailyHistory>): number {
+  if (!history || Object.keys(history).length === 0) return 0;
+
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const todayEntry = history[todayStr];
+  const hasCompletedToday = todayEntry && (todayEntry.questsCompletedCount || 0) > 0;
+
+  // If completed today, count streak from today backwards
+  // If not completed today yet, count streak from yesterday backwards (preserve streak for current day)
+  const checkDate = new Date(today);
+  if (!hasCompletedToday) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  let currentStreak = 0;
+  // Maximum loop of 365 days to prevent any infinite loop
+  for (let i = 0; i < 365; i++) {
+    const dStr = checkDate.toISOString().split('T')[0];
+    const entry = history[dStr];
+    if (entry && (entry.questsCompletedCount || 0) > 0) {
+      currentStreak += 1;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  return currentStreak;
+}
 
 const initialState: SettingsState = {
-  pin: 'FIT-1001',
+  pin: '',
   soundEnabled: true,
   isSyncModalOpen: false,
   isRealtimeSyncing: false,
   lastSyncTime: '',
-  streak: 6,
-  lastActiveDate: new Date().toISOString().split('T')[0],
-  history: getInitialHistory(),
+  streak: 0,
+  lastActiveDate: '',
+  history: {},
 };
 
 export const settingsSlice = createSlice({
@@ -69,30 +77,7 @@ export const settingsSlice = createSlice({
       state.lastSyncTime = action.payload;
     },
     checkAndProcessStreak: (state) => {
-      const today = new Date().toISOString().split('T')[0];
-      if (!state.lastActiveDate) {
-        state.lastActiveDate = today;
-        state.streak = 1;
-        return;
-      }
-
-      if (state.lastActiveDate === today) {
-        return;
-      }
-
-      const lastDate = new Date(state.lastActiveDate);
-      const currentDate = new Date(today);
-      const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 1) {
-        // Consecutive day
-        state.streak += 1;
-      } else if (diffDays > 1) {
-        // Missed days
-        state.streak = 1;
-      }
-      state.lastActiveDate = today;
+      state.streak = calculateStreak(state.history);
     },
     recordDailyHistory: (state, action: PayloadAction<{ date: string; questId: string; coins: number }>) => {
       const { date, questId, coins } = action.payload;
@@ -110,6 +95,20 @@ export const settingsSlice = createSlice({
           state.history[date].questsCompletedCount += 1;
         }
       }
+      state.streak = calculateStreak(state.history);
+      state.lastActiveDate = date;
+    },
+    removeDailyHistory: (state, action: PayloadAction<{ date: string; questId: string; coins: number }>) => {
+      const { date, questId, coins } = action.payload;
+      if (state.history[date]) {
+        state.history[date].completedQuestIds = state.history[date].completedQuestIds.filter((id) => id !== questId);
+        state.history[date].coinsEarned = Math.max(0, state.history[date].coinsEarned - coins);
+        state.history[date].questsCompletedCount = state.history[date].completedQuestIds.length;
+        if (state.history[date].questsCompletedCount === 0) {
+          delete state.history[date];
+        }
+      }
+      state.streak = calculateStreak(state.history);
     },
     setSettingsState: (
       state,
@@ -121,9 +120,9 @@ export const settingsSlice = createSlice({
       }>
     ) => {
       state.pin = action.payload.pin;
-      state.streak = action.payload.streak;
+      state.history = action.payload.history || {};
+      state.streak = calculateStreak(state.history);
       state.lastActiveDate = action.payload.lastActiveDate;
-      state.history = action.payload.history;
     },
   },
 });
@@ -137,6 +136,7 @@ export const {
   setLastSyncTime,
   checkAndProcessStreak,
   recordDailyHistory,
+  removeDailyHistory,
   setSettingsState,
 } = settingsSlice.actions;
 

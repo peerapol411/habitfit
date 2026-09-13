@@ -16,12 +16,13 @@ import {
   Upload, 
   Scale,
   BarChart3,
-  Sparkles
+  Sparkles,
+  RotateCcw
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { setQuestsState } from '@/store/questSlice';
-import { setWalletState } from '@/store/walletSlice';
-import { setSettingsState } from '@/store/settingsSlice';
+import { setQuestsState, INITIAL_QUESTS } from '@/store/questSlice';
+import { setWalletState, INITIAL_REWARDS } from '@/store/walletSlice';
+import { setSettingsState, setPin } from '@/store/settingsSlice';
 import { setMetricsState } from '@/store/metricsSlice';
 
 export default function Home() {
@@ -83,6 +84,64 @@ export default function Home() {
       }
     };
     reader.readAsText(file);
+  };
+
+  // Reset to Clean Real State (Purge all mock / test data)
+  const handleResetToCleanState = () => {
+    if (
+      confirm(
+        'คุณต้องการรีเซ็ตเพื่อเริ่มใช้งานจริงใช่หรือไม่?\n\n' +
+        '• ล้างประวัติน้ำหนัก สถิติ และเควสต์จำลองออกทั้งหมด\n' +
+        '• รีเซ็ตเหรียญเป็น 0 และสร้าง PIN ประจำตัวใหม่\n' +
+        '• เริ่มต้นบันทึกสถิติและความฟิตของคุณเองจริง 100%'
+      )
+    ) {
+      sound.playClick();
+      const newPin = `FIT-${Math.floor(1000 + Math.random() * 9000)}`;
+      localStorage.clear();
+      localStorage.setItem('habitfit_pin', newPin);
+
+      const freshQuests = INITIAL_QUESTS.map((q) => ({ ...q, completed: false }));
+      dispatch(setQuestsState(freshQuests));
+      dispatch(
+        setWalletState({
+          coins: 0,
+          totalCoinsEarned: 0,
+          rewards: INITIAL_REWARDS,
+          tickets: [],
+        })
+      );
+      dispatch(
+        setSettingsState({
+          pin: newPin,
+          streak: 0,
+          lastActiveDate: '',
+          history: {},
+        })
+      );
+      dispatch(setMetricsState({ records: [], userHeightCm: 170 }));
+      dispatch(setPin(newPin));
+
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pin: newPin,
+          coins: 0,
+          totalCoinsEarned: 0,
+          streak: 0,
+          lastActiveDate: '',
+          quests: freshQuests,
+          rewards: INITIAL_REWARDS,
+          tickets: [],
+          history: {},
+          metrics: [],
+          userHeightCm: 170,
+        }),
+      }).catch(() => {});
+
+      alert('รีเซ็ตสู่ระบบข้อมูลจริงเรียบร้อยแล้ว! พร้อมให้คุณเริ่มบันทึกการออกกำลังกายจริงของคุณ');
+    }
   };
 
   return (
@@ -204,6 +263,17 @@ export default function Home() {
                 className="hidden"
               />
             </label>
+
+            <span className="text-zinc-700">|</span>
+
+            <button
+              onClick={handleResetToCleanState}
+              className="flex items-center gap-1 text-zinc-500 hover:text-rose-400 transition-colors"
+              title="ล้างข้อมูลจำลองทั้งหมด และเริ่มต้นบันทึกข้อมูลจริงของคุณ"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>รีเซ็ตเริ่มต้นใช้งานจริง</span>
+            </button>
           </div>
         </div>
       </footer>

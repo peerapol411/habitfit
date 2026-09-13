@@ -23,15 +23,16 @@ export default function SyncModal() {
   const [copied, setCopied] = useState(false);
   const [inputPin, setInputPin] = useState('');
   const [networkHost, setNetworkHost] = useState('localhost:3000');
+  const [protocol, setProtocol] = useState('https:');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const host = window.location.host;
-      setNetworkHost(host);
+      setNetworkHost(window.location.host);
+      setProtocol(window.location.protocol);
     }
   }, []);
 
-  const syncUrl = `http://${networkHost}/?pin=${pin}`;
+  const syncUrl = `${protocol}//${networkHost}/?pin=${pin}`;
 
   useEffect(() => {
     if (isSyncModalOpen && pin) {

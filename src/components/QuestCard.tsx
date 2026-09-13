@@ -5,7 +5,7 @@ import { Quest } from '@/types';
 import { useAppDispatch } from '@/store/store';
 import { toggleQuest, deleteQuest } from '@/store/questSlice';
 import { addCoins, subtractCoins } from '@/store/walletSlice';
-import { recordDailyHistory } from '@/store/settingsSlice';
+import { recordDailyHistory, removeDailyHistory } from '@/store/settingsSlice';
 import { sound } from '@/lib/audioService';
 import { Check, Coins, Trash2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -19,12 +19,11 @@ export default function QuestCard({ quest, onEdit }: QuestCardProps) {
   const dispatch = useAppDispatch();
 
   const handleToggle = () => {
+    const today = new Date().toISOString().split('T')[0];
     if (!quest.completed) {
       sound.playComplete();
       dispatch(toggleQuest(quest.id));
       dispatch(addCoins(quest.rewardCoins));
-
-      const today = new Date().toISOString().split('T')[0];
       dispatch(recordDailyHistory({ date: today, questId: quest.id, coins: quest.rewardCoins }));
 
       // Subtle confetti burst for hard quests
@@ -40,6 +39,7 @@ export default function QuestCard({ quest, onEdit }: QuestCardProps) {
       sound.playClick();
       dispatch(toggleQuest(quest.id));
       dispatch(subtractCoins(quest.rewardCoins));
+      dispatch(removeDailyHistory({ date: today, questId: quest.id, coins: quest.rewardCoins }));
     }
   };
 
