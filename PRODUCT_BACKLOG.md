@@ -15,7 +15,7 @@
 | **Sprint 4** | **Seamless Cross-Device Sync & Persistence** | PBI-007, PBI-008, PBI-009 | 🟢 **DONE** |
 | **Sprint 5** | **Advanced Insights & Mobile PWA** | PBI-010, PBI-011, PBI-012 | 🟢 **DONE** |
 | **Sprint 6** | **Global Cloud Persistence & Real Data Engine** | PBI-013, PBI-014, PBI-015, PBI-016 | 🟢 **DONE** |
-| **Sprint 7** | **1-Month Calendar History & Day Detail Drill-Down** | PBI-017 | 🟢 **DONE** |
+| **Sprint 7** | **1-Month Calendar History & Daily Wisdom Quotes** | PBI-017, PBI-018 | 🟢 **DONE** |
 
 ---
 
@@ -254,3 +254,22 @@
   - [x] มี Empty State สวยงามสำหรับวันที่เป็นวันพักผ่อน (Rest Day)
   - [x] อัปเดต `CompletedQuestDetail` ใน `DailyHistory` เพื่อเก็บ Snapshot ของเควสต์ในแต่ละวัน พร้อม Backward Compatibility ป้องกันข้อมูลเก่าพัง
   - [x] ดีไซน์เรียบหรูสไตล์ Apple Health / Notion พร้อมเสียงเอฟเฟกต์ คลิกเปลี่ยนเดือนและเปิดปิดหน้าต่าง
+
+---
+
+#### 🔷 PBI-018: Daily Motivation & Wisdom Quotes (Auto-Rotating Daily Inspiration)
+* **Status:** 🟢 **DONE**
+* **Priority:** High (P1)
+* **Estimation:** 3 Story Points
+* **User Story:**
+  > ในฐานะ **ผู้ใช้งานที่ต้องการสร้างวินัยและแรงบันดาลใจในการออกกำลังกายและพัฒนาตนเอง**  
+  > ฉันต้องการ **ให้มีส่วนแสดงคำคมสร้างพลังใจ (Motivation Quote) ที่สุ่มเปลี่ยนใหม่อัตโนมัติในทุกๆ วัน พร้อมระบุชื่อและบทบาทของผู้พูด**  
+  > เพื่อที่ **ฉันจะได้เริ่มต้นวันใหม่ด้วย Mindset ที่แข็งแกร่ง มีไฟในการพิชิตเควสต์ และได้ข้อคิดดีๆ ในการพัฒนาสติปัญญาและวินัย**
+* **Acceptance Criteria (DoD):**
+  - [x] รวบรวมคลังคำคมคุณภาพ 30 รายการ จากบุคคลระดับโลกทั้งสายออกกำลังกาย/วินัยเหล็ก (เช่น Arnold Schwarzenegger, David Goggins, Kobe Bryant, Muhammad Ali, Eliud Kipchoge) และสายปัญญา/การพัฒนาตนเอง (เช่น James Clear, Marcus Aurelius, Naval Ravikant, Charlie Munger, Leonardo da Vinci, Albert Einstein)
+  - [x] ระบบสุ่มคำคมอัตโนมัติอิงตามวันจริง (`Date-based Deterministic Hash`) โดยวันเดียวกันจะได้คำคมเดียวกันเสมอ ไม่เปลี่ยนมั่วเมื่อรีเฟรช และเปลี่ยนเป็นคำคมใหม่ทุกวันเมื่อขึ้นวันใหม่
+  - [x] ไม่ต้องให้ผู้ใช้กดสุ่มมือถือเอง เป็นกิจวัตรต้อนรับวันใหม่ที่สง่างามและไม่รบกวนสมาธิ
+  - [x] แสดงป้ายกำกับหมวดหมู่ชัดเจน: 🟢 วินัย & ความแข็งแกร่ง, 🔵 พลังแห่งนิสัย & ระบบ, 🟡 จิตวิทยา & ความมุ่งมั่น, 🟣 ปัญญา & การเรียนรู้
+  - [x] มีปุ่มกดคัดลอกคำคม (Copy) เพื่อนำไปแชร์หรือเก็บไว้เตือนใจ พร้อมเสียงคลิกสไตล์ Apple และแจ้งเตือน "คัดลอกแล้ว"
+  - [x] ดีไซน์มินิมอลสไตล์ Notion / Apple Health บนการ์ดสีดำกราไฟต์ พร้อมประกายเรืองแสงนุ่มนวล
+

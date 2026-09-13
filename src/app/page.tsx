@@ -6,6 +6,7 @@ import QuestList from '@/components/QuestList';
 import RewardShop from '@/components/RewardShop';
 import HistoryTracker from '@/components/HistoryTracker';
 import BodyMetricsView from '@/components/BodyMetricsView';
+import DailyMotivationCard from '@/components/DailyMotivationCard';
 import SyncModal from '@/components/SyncModal';
 import { sound } from '@/lib/audioService';
 import { 
@@ -220,6 +221,9 @@ export default function Home() {
             </button>
           </div>
         </div>
+
+        {/* Daily Motivation & Wisdom Quote */}
+        <DailyMotivationCard />
 
         {/* View Switcher */}
         {activeView === 'quests' && <QuestList />}
