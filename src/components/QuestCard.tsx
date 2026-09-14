@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Quest } from '@/types';
+import { Quest, QuestCategory } from '@/types';
 import { useAppDispatch } from '@/store/store';
 import { toggleQuest, deleteQuest } from '@/store/questSlice';
 import { addCoins, subtractCoins } from '@/store/walletSlice';
@@ -51,6 +51,29 @@ export default function QuestCard({ quest, onEdit }: QuestCardProps) {
     }
   };
 
+  const categoryConfig: Record<QuestCategory, { label: string; badge: string; color: string }> = {
+    fitness: {
+      label: 'ออกกำลังกาย',
+      badge: '🏃',
+      color: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    },
+    learning: {
+      label: 'พัฒนาตัวเอง',
+      badge: '🧠',
+      color: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    },
+    health: {
+      label: 'สุขภาพกาย',
+      badge: '🥗',
+      color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    },
+    mind: {
+      label: 'สุขภาพใจ',
+      badge: '🧘',
+      color: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+    },
+  };
+
   const difficultyConfig = {
     easy: {
       label: 'ง่าย',
@@ -98,6 +121,16 @@ export default function QuestCard({ quest, onEdit }: QuestCardProps) {
           {/* Details */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
+              {quest.category && categoryConfig[quest.category] && (
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+                    categoryConfig[quest.category].color
+                  }`}
+                >
+                  <span>{categoryConfig[quest.category].badge}</span>
+                  <span>{categoryConfig[quest.category].label}</span>
+                </span>
+              )}
               <span
                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${conf.color}`}
               >

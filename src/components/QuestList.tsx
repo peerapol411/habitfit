@@ -9,6 +9,7 @@ import { Plus, CheckCircle2, ListFilter, Sparkles } from 'lucide-react';
 
 export default function QuestList() {
   const { quests } = useAppSelector((state) => state.quest);
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'fitness' | 'learning' | 'health' | 'mind'>('all');
   const [filter, setFilter] = useState<'all' | 'easy' | 'medium' | 'hard' | 'completed'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -18,7 +19,21 @@ export default function QuestList() {
     .filter((q) => q.completed)
     .reduce((sum, q) => sum + q.rewardCoins, 0);
 
+  const categoryList = [
+    { id: 'all', label: 'ทั้งหมด', icon: '✨' },
+    { id: 'fitness', label: 'ออกกำลังกาย', icon: '🏃' },
+    { id: 'learning', label: 'พัฒนาตัวเอง', icon: '🧠' },
+    { id: 'health', label: 'สุขภาพกาย', icon: '🥗' },
+    { id: 'mind', label: 'สุขภาพใจ', icon: '🧘' },
+  ];
+
   const filteredQuests = quests.filter((q) => {
+    // Category check
+    if (categoryFilter !== 'all') {
+      const cat = q.category || 'fitness';
+      if (cat !== categoryFilter) return false;
+    }
+    // Difficulty / status check
     if (filter === 'all') return true;
     if (filter === 'completed') return q.completed;
     return q.difficulty === filter;
@@ -34,14 +49,14 @@ export default function QuestList() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                ภารกิจออกกำลังกายประจำวัน
+                ภารกิจและนิสัยประจำวัน (4 มิติชีวิต)
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                 {completedCount}/{totalCount} เสร็จสิ้น
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-1">
-              ทำเควสต์เพื่อรับเหรียญรางวัล ยิ่งยากยิ่งได้เหรียญมาก นำไปแลกของรางวัลที่คุณต้องการ
+              สร้างความก้าวหน้าทั้งร่างกาย สมอง และจิตใจ สะสมเหรียญรางวัลเพื่อนำไปแลกของรางวัลชีวิต
             </p>
           </div>
 
@@ -51,7 +66,7 @@ export default function QuestList() {
               sound.playClick();
               setIsModalOpen(true);
             }}
-            className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold transition-all shadow-sm shrink-0"
+            className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold transition-all shadow-sm shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>สร้างเควสต์เพิ่ม</span>
@@ -62,7 +77,7 @@ export default function QuestList() {
         <div className="mt-5 space-y-2">
           <div className="flex justify-between text-xs font-medium text-zinc-400">
             <span>ความคืบหน้าวันนี้ ({progressPercent}%)</span>
-            <span className="text-emerald-400">รับแล้ว +{totalCoinsAvailable} Coins</span>
+            <span className="text-emerald-400 font-mono">รับแล้ว +{totalCoinsAvailable} Coins</span>
           </div>
           <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
             <div
@@ -73,69 +88,102 @@ export default function QuestList() {
         </div>
       </div>
 
-      {/* Filter Tabs */}
+      {/* 4 Pillars Category Filter Pills */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs max-w-full">
+        {categoryList.map((cat) => {
+          const countInCat = cat.id === 'all'
+            ? quests.length
+            : quests.filter((q) => (q.category || 'fitness') === cat.id).length;
+          const doneInCat = cat.id === 'all'
+            ? completedCount
+            : quests.filter((q) => (q.category || 'fitness') === cat.id && q.completed).length;
+
+          return (
+            <button
+              key={cat.id}
+              onClick={() => {
+                sound.playClick();
+                setCategoryFilter(cat.id as any);
+              }}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border transition-all shrink-0 font-medium ${
+                categoryFilter === cat.id
+                  ? 'bg-emerald-500 border-emerald-500 text-black font-semibold shadow-sm'
+                  : 'bg-zinc-900/90 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700'
+              }`}
+            >
+              <span>{cat.icon}</span>
+              <span>{cat.label}</span>
+              <span className={`text-[10px] font-mono ${categoryFilter === cat.id ? 'text-black/70 font-bold' : 'text-zinc-500'}`}>
+                ({doneInCat}/{countInCat})
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Difficulty & Status Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
         <button
           onClick={() => {
             sound.playClick();
             setFilter('all');
           }}
-          className={`px-3.5 py-2 rounded-xl border transition-all shrink-0 font-medium ${
+          className={`px-3 py-1.5 rounded-lg border transition-all shrink-0 font-medium ${
             filter === 'all'
               ? 'bg-zinc-100 border-zinc-100 text-zinc-950 font-semibold'
-              : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+              : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          ทั้งหมด ({totalCount})
+          ความยากทั้งหมด
         </button>
         <button
           onClick={() => {
             sound.playClick();
             setFilter('easy');
           }}
-          className={`px-3 py-2 rounded-xl border transition-all shrink-0 font-medium ${
+          className={`px-3 py-1.5 rounded-lg border transition-all shrink-0 font-medium ${
             filter === 'easy'
               ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 font-semibold'
-              : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+              : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          🟢 ง่าย ({quests.filter((q) => q.difficulty === 'easy').length})
+          🟢 ง่าย
         </button>
         <button
           onClick={() => {
             sound.playClick();
             setFilter('medium');
           }}
-          className={`px-3 py-2 rounded-xl border transition-all shrink-0 font-medium ${
+          className={`px-3 py-1.5 rounded-lg border transition-all shrink-0 font-medium ${
             filter === 'medium'
               ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-semibold'
-              : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+              : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          🟡 ปานกลาง ({quests.filter((q) => q.difficulty === 'medium').length})
+          🟡 ปานกลาง
         </button>
         <button
           onClick={() => {
             sound.playClick();
             setFilter('hard');
           }}
-          className={`px-3 py-2 rounded-xl border transition-all shrink-0 font-medium ${
+          className={`px-3 py-1.5 rounded-lg border transition-all shrink-0 font-medium ${
             filter === 'hard'
               ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-semibold'
-              : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+              : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          🔴 ยาก ({quests.filter((q) => q.difficulty === 'hard').length})
+          🔴 ยาก
         </button>
         <button
           onClick={() => {
             sound.playClick();
             setFilter('completed');
           }}
-          className={`px-3 py-2 rounded-xl border transition-all shrink-0 font-medium ${
+          className={`px-3 py-1.5 rounded-lg border transition-all shrink-0 font-medium ${
             filter === 'completed'
               ? 'bg-zinc-800 border-zinc-700 text-white font-semibold'
-              : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+              : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
           }`}
         >
           ✓ สำเร็จแล้ว ({completedCount})

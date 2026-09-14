@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAppDispatch } from '@/store/store';
 import { addCustomQuest } from '@/store/questSlice';
 import { sound } from '@/lib/audioService';
-import { Difficulty } from '@/types';
+import { Difficulty, QuestCategory } from '@/types';
 import { X, Plus, Coins } from 'lucide-react';
 
 interface QuestModalProps {
@@ -16,6 +16,7 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
   const dispatch = useAppDispatch();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<QuestCategory>('fitness');
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [rewardCoins, setRewardCoins] = useState(30);
 
@@ -31,12 +32,14 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
         title: title.trim(),
         description: description.trim(),
         difficulty,
+        category,
         rewardCoins: Number(rewardCoins) || 20,
       })
     );
 
     setTitle('');
     setDescription('');
+    setCategory('fitness');
     setDifficulty('medium');
     setRewardCoins(30);
     onClose();
@@ -63,9 +66,9 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-lg font-bold text-white mb-1">สร้างเควสต์ออกกำลังกายใหม่</h2>
+        <h2 className="text-lg font-bold text-white mb-1">สร้างเควสต์ประจำวันใหม่</h2>
         <p className="text-xs text-zinc-400 mb-5">
-          กำหนดเป้าหมายการออกกำลังกายส่วนตัว พร้อมกำหนดเหรียญรางวัลที่ได้รับ
+          กำหนดเป้าหมายประจำวันทั้งออกกำลังกาย พัฒนาตนเอง หรือดูแลสุขภาพ พร้อมรับเหรียญรางวัล
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -96,6 +99,63 @@ export default function QuestModal({ isOpen, onClose }: QuestModalProps) {
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 focus:border-emerald-500 focus:outline-none text-sm text-white placeholder-zinc-500 resize-none"
             />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+              หมวดหมู่เควสต์
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setCategory('fitness')}
+                className={`py-2 px-2.5 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                  category === 'fitness'
+                    ? 'bg-blue-500/20 border-blue-500 text-blue-300 shadow-sm'
+                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                }`}
+              >
+                <span>🏃</span>
+                <span>ออกกำลังกาย</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategory('learning')}
+                className={`py-2 px-2.5 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                  category === 'learning'
+                    ? 'bg-purple-500/20 border-purple-500 text-purple-300 shadow-sm'
+                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                }`}
+              >
+                <span>🧠</span>
+                <span>พัฒนาตัวเอง</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategory('health')}
+                className={`py-2 px-2.5 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                  category === 'health'
+                    ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-sm'
+                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                }`}
+              >
+                <span>🥗</span>
+                <span>สุขภาพกาย</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategory('mind')}
+                className={`py-2 px-2.5 rounded-xl border text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                  category === 'mind'
+                    ? 'bg-teal-500/20 border-teal-500 text-teal-300 shadow-sm'
+                    : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                }`}
+              >
+                <span>🧘</span>
+                <span>สุขภาพใจ</span>
+              </button>
+            </div>
           </div>
 
           {/* Difficulty */}

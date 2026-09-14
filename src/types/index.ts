@@ -1,10 +1,12 @@
 export type Difficulty = 'easy' | 'medium' | 'hard';
+export type QuestCategory = 'fitness' | 'learning' | 'health' | 'mind';
 
 export interface Quest {
   id: string;
   title: string;
   description: string;
   difficulty: Difficulty;
+  category?: QuestCategory;
   rewardCoins: number;
   completed: boolean;
   isCustom?: boolean;
@@ -39,6 +41,7 @@ export interface CompletedQuestDetail {
   id: string;
   title: string;
   difficulty: Difficulty;
+  category?: QuestCategory;
   rewardCoins: number;
 }
 

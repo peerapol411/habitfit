@@ -2,110 +2,232 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Quest } from '@/types';
 
 export const INITIAL_QUESTS: Quest[] = [
-  // Easy (ง่าย) 🟢
+  // ---------------- 1. 🏃 ออกกำลังกาย & บอดี้เวท (FITNESS) ----------------
   {
-    id: 'q-easy-1',
-    title: 'ดื่มน้ำเปล่า 2,000 มล.',
-    description: 'จิบน้ำเปล่าสะอาดตลอดวัน ช่วยกระตุ้นระบบเผาผลาญและระบบขับถ่าย',
+    id: 'q-fit-1',
+    title: 'ยืดเหยียดกล้ามเนื้อ คลายออฟฟิศซินโดรม 10 นาที',
+    description: 'Stretching คลายกล้ามเนื้อคอ บ่า ไหล่ และหลัง คลายความตึงจากการนั่งทำงานหน้าจอคอมพิวเตอร์',
     difficulty: 'easy',
-    rewardCoins: 15,
-    completed: false,
-    targetCount: 2000,
-    unit: 'มล.',
-  },
-  {
-    id: 'q-easy-2',
-    title: 'เดินสะสม 4,000 ก้าว',
-    description: 'ขยับร่างกาย เดินเล่น หรือเดินขึ้นบันไดสะสมให้ครบ 4,000 ก้าว',
-    difficulty: 'easy',
-    rewardCoins: 20,
-    completed: false,
-    targetCount: 4000,
-    unit: 'ก้าว',
-  },
-  {
-    id: 'q-easy-3',
-    title: 'ยืดเหยียดกล้ามเนื้อ 10 นาที',
-    description: 'Stretching คลายกล้ามเนื้อคอ บ่า ไหล่ และหลัง ลดอาการออฟฟิศซินโดรม',
-    difficulty: 'easy',
+    category: 'fitness',
     rewardCoins: 15,
     completed: false,
     targetCount: 10,
     unit: 'นาที',
   },
-
-  // Medium (ปานกลาง) 🟡
   {
-    id: 'q-med-1',
-    title: 'ดื่มน้ำสะอาด 2.5 ลิตร',
-    description: 'ดื่มน้ำสะอาด 2,500 มล. ช่วยให้ผิวพรรณสดใส ลดอาการบวมน้ำ',
-    difficulty: 'medium',
-    rewardCoins: 25,
+    id: 'q-fit-2',
+    title: 'เดินสะสม 5,000 ก้าวในชีวิตประจำวัน',
+    description: 'ขยับร่างกาย เดินเล่น หรือเดินขึ้นบันไดสะสมให้ครบ 5,000 ก้าวตลอดทั้งวัน',
+    difficulty: 'easy',
+    category: 'fitness',
+    rewardCoins: 20,
     completed: false,
-    targetCount: 2500,
-    unit: 'มล.',
-  },
-  {
-    id: 'q-med-2',
-    title: 'เดินเร็วหรือวิ่งเบาๆ 7,000 ก้าว',
-    description: 'คาร์ดิโอระดับเบิร์นไขมันต่อเนื่อง สะสมให้ครบ 7,000 ก้าว',
-    difficulty: 'medium',
-    rewardCoins: 35,
-    completed: false,
-    targetCount: 7000,
+    targetCount: 5000,
     unit: 'ก้าว',
   },
   {
-    id: 'q-med-3',
-    title: 'สควอท (Squats) 30 ครั้ง',
-    description: 'กระชับต้นขาและสะโพก เสริมเตาเผาผลาญไขมันชิ้นใหญ่ที่สุดของร่างกาย',
+    id: 'q-fit-3',
+    title: 'สควอท (Squats) 30 ครั้งในห้อง',
+    description: 'กระชับต้นขา สะโพก และแกนกลางลำตัว เสริมเตาเผาผลาญไขมันชิ้นใหญ่ที่สุดของร่างกาย',
     difficulty: 'medium',
+    category: 'fitness',
     rewardCoins: 35,
     completed: false,
     targetCount: 30,
     unit: 'ครั้ง',
   },
-
-  // Hard (ยาก) 🔴
   {
-    id: 'q-hard-1',
-    title: 'วิดพื้นมาตรฐาน 40 ครั้ง',
-    description: 'แบ่งเซ็ตวิดพื้น เสริมสร้างกล้ามเนื้ออก แขน และแกนกลางลำตัว',
+    id: 'q-fit-4',
+    title: 'วิดพื้นมาตรฐาน 30–40 ครั้ง',
+    description: 'บอดี้เวทสร้างกล้ามเนื้ออก แขน และแกนกลางลำตัว แบ่งทำ 3–4 เซ็ตตามความฟิต',
     difficulty: 'hard',
+    category: 'fitness',
     rewardCoins: 55,
     completed: false,
     targetCount: 40,
     unit: 'ครั้ง',
   },
   {
-    id: 'q-hard-2',
-    title: 'สควอทเข้มข้น 60 ครั้ง',
-    description: 'บอดี้เวทเข้มข้น แบ่งทำ 3-4 เซ็ต เซ็ตละ 15-20 ครั้ง',
+    id: 'q-fit-5',
+    title: 'ออกกำลังกายเข้มข้น หรือวิ่ง 30–40 นาที',
+    description: 'คาร์ดิโอ วิ่ง เดินเร็ว หรือเวทเทรนนิ่งต่อเนื่องอย่างน้อย 30 นาที เผาผลาญพลังงานเต็มที่',
     difficulty: 'hard',
-    rewardCoins: 60,
+    category: 'fitness',
+    rewardCoins: 70,
     completed: false,
-    targetCount: 60,
+    targetCount: 35,
+    unit: 'นาที',
+  },
+
+  // ---------------- 2. 🧠 พัฒนาตัวเอง & การเรียนรู้ (LEARNING) ----------------
+  {
+    id: 'q-learn-1',
+    title: 'อ่านหนังสือพัฒนาตัวเอง หรือบทความคุณภาพ 10–15 หน้า',
+    description: 'เติมความรู้และไอเดียใหม่ๆ สละเวลา 15 นาทีอ่านหนังสือหรือบทความเชิงลึก',
+    difficulty: 'easy',
+    category: 'learning',
+    rewardCoins: 20,
+    completed: false,
+    targetCount: 15,
+    unit: 'หน้า',
+  },
+  {
+    id: 'q-learn-2',
+    title: 'ฟัง Podcast สาระความรู้ หรือดูคลิปพัฒนาตนเอง 1 ตอน',
+    description: 'ฟังสาระความรู้ด้านธุรกิจ การเงิน จิตวิทยา หรือเทคโนโลยี 15–30 นาทีตอนเดินทางหรือพักผ่อน',
+    difficulty: 'medium',
+    category: 'learning',
+    rewardCoins: 25,
+    completed: false,
+    targetCount: 20,
+    unit: 'นาที',
+  },
+  {
+    id: 'q-learn-3',
+    title: 'ฝึกฝนทักษะงาน / Coding / ภาษาต่างประเทศ 25 นาที (Deep Work)',
+    description: 'โฟกัสเต็มที่กับการอัปสกิลงาน เขียนโค้ด หรือฝึกภาษา 25 นาทีแบบไม่แตะโทรศัพท์',
+    difficulty: 'hard',
+    category: 'learning',
+    rewardCoins: 50,
+    completed: false,
+    targetCount: 25,
+    unit: 'นาที',
+  },
+  {
+    id: 'q-learn-4',
+    title: 'ทบทวนบทเรียนประจำวัน & วางแผน To-Do List สำหรับวันพรุ่งนี้',
+    description: 'สรุปสิ่งที่ทำสำเร็จในวันนี้ และจัดลำดับความสำคัญ 3 สิ่งที่ต้องทำในวันพรุ่งนี้ก่อนเข้านอน',
+    difficulty: 'easy',
+    category: 'learning',
+    rewardCoins: 15,
+    completed: false,
+    targetCount: 1,
+    unit: 'ครั้ง',
+  },
+
+  // ---------------- 3. 🥗 สุขภาพกาย & สกินแคร์ (PHYSICAL HEALTH) ----------------
+  {
+    id: 'q-health-1',
+    title: 'ดื่มน้ำสะอาดสะสม 2,000–2,500 มล. ตลอดวัน',
+    description: 'จิบน้ำเปล่าสะอาดตลอดทั้งวัน ช่วยกระตุ้นระบบเผาผลาญ สมองปลอดโปร่ง และลดอาการบวมน้ำ',
+    difficulty: 'easy',
+    category: 'health',
+    rewardCoins: 20,
+    completed: false,
+    targetCount: 2500,
+    unit: 'มล.',
+  },
+  {
+    id: 'q-health-2',
+    title: 'กฎ 20-20-20: พักสายตาและลุกเปลี่ยนอิริยาบถจากหน้าจอ',
+    description: 'มองไกล 20 ฟุตเป็นเวลา 20 วินาที และลุกเดินยืดเส้นยืดสายทุกๆ 1-2 ชั่วโมงของการทำงาน',
+    difficulty: 'easy',
+    category: 'health',
+    rewardCoins: 15,
+    completed: false,
+    targetCount: 3,
+    unit: 'รอบ',
+  },
+  {
+    id: 'q-health-3',
+    title: 'ออกไปรับแสงแดดอ่อนๆ ยามเช้า 10–15 นาที',
+    description: 'รับแสงแดดธรรมชาติช่วงเช้า ช่วยกระตุ้นฮอร์โมน ปรับนาฬิกาชีวิต และเพิ่มพลังงานความสดชื่น',
+    difficulty: 'easy',
+    category: 'health',
+    rewardCoins: 15,
+    completed: false,
+    targetCount: 15,
+    unit: 'นาที',
+  },
+  {
+    id: 'q-health-4',
+    title: 'ทานมื้ออาหารที่ดีต่อสุขภาพ (เน้นโปรตีน เลี่ยงหวานมันทอด)',
+    description: 'เลือกทานอาหารที่มีประโยชน์ เช่น อกไก่ ไข่ ปลา ผักผลไม้ และลดของหวานทอดมัน 1 มื้อเต็มๆ',
+    difficulty: 'medium',
+    category: 'health',
+    rewardCoins: 30,
+    completed: false,
+    targetCount: 1,
+    unit: 'มื้อ',
+  },
+  {
+    id: 'q-health-5',
+    title: 'นอนหลับพักผ่อนเต็มอิ่ม 7–8 ชั่วโมง (เข้านอนตรงเวลา)',
+    description: 'ให้ร่างกายและสมองได้ฟื้นฟูเซลล์อย่างสมบูรณ์ เข้านอนตรงตามเวลาที่ตั้งใจ',
+    difficulty: 'medium',
+    category: 'health',
+    rewardCoins: 35,
+    completed: false,
+    targetCount: 8,
+    unit: 'ชม.',
+  },
+  {
+    id: 'q-health-6',
+    title: 'Self-Care วันพิเศษ: อาบน้ำใหญ่ ขัดผิว มาร์คหน้า ทาครีมครบเซ็ต',
+    description: 'กิจวัตรปรนนิบัติร่างกายเต็มรูปแบบ ขัดตัว มาร์คหน้า และบำรุงผิวให้สดชื่นรักตัวเอง',
+    difficulty: 'hard',
+    category: 'health',
+    rewardCoins: 50,
+    completed: false,
+    targetCount: 1,
+    unit: 'เซ็ต',
+  },
+
+  // ---------------- 4. 🧘 สุขภาพใจ & สมาธิ (MINDFULNESS) ----------------
+  {
+    id: 'q-mind-1',
+    title: 'Digital Detox: วางมือถืองดเล่นโซเชียล 30 นาทีก่อนนอน',
+    description: 'งดเสพข่าวดราม่าและแสงสีฟ้า 30 นาทีก่อนนอน ช่วยให้สมองสงบและหลับลึกอย่างมีคุณภาพ',
+    difficulty: 'easy',
+    category: 'mind',
+    rewardCoins: 20,
+    completed: false,
+    targetCount: 30,
+    unit: 'นาที',
+  },
+  {
+    id: 'q-mind-2',
+    title: 'ฝึกหายใจลึกๆ หรือนั่งสมาธิผ่อนคลาย 5–10 นาที',
+    description: 'ฝึกสติอยู่กับลมหายใจเข้าออกช้าๆ ปล่อยวางความกังวลและความเครียดสะสมของวัน',
+    difficulty: 'easy',
+    category: 'mind',
+    rewardCoins: 20,
+    completed: false,
+    targetCount: 10,
+    unit: 'นาที',
+  },
+  {
+    id: 'q-mind-3',
+    title: 'จัดโต๊ะทำงานหรือห้องนอนให้สะอาด โล่งตา',
+    description: 'จัดเก็บของบนโต๊ะให้เป็นระเบียบ สภาพแวดล้อมที่โปร่งโล่งช่วยให้จิตใจสงบและมีสมาธิ',
+    difficulty: 'medium',
+    category: 'mind',
+    rewardCoins: 25,
+    completed: false,
+    targetCount: 1,
     unit: 'ครั้ง',
   },
   {
-    id: 'q-hard-3',
-    title: 'พิชิต 10,000 ก้าว หรือ วิ่ง 5 กม.',
-    description: 'เผาผลาญแคลอรีขั้นสูง ด้วยการเดินเร็ว 10,000 ก้าว หรือวิ่งระยะ 5 กม.',
-    difficulty: 'hard',
-    rewardCoins: 75,
+    id: 'q-mind-4',
+    title: 'ขอบคุณ 3 สิ่งดีๆ ในชีวิต หรือชื่นชมความพยายามของตัวเอง',
+    description: 'จดจำและบันทึกความรู้สึกขอบคุณต่อสิ่งดีๆ หรือสิ่งที่ทำได้สำเร็จในวันนี้ 3 ข้อ',
+    difficulty: 'easy',
+    category: 'mind',
+    rewardCoins: 15,
     completed: false,
-    targetCount: 10000,
-    unit: 'ก้าว',
+    targetCount: 3,
+    unit: 'ข้อ',
   },
   {
-    id: 'q-hard-4',
-    title: 'ออกกำลังกายต่อเนื่อง 40 นาที',
-    description: 'เวทเทรนนิ่ง ฟิตเนส โยคะ หรือปั่นจักรยานต่อเนื่องอย่างน้อย 40 นาที',
-    difficulty: 'hard',
-    rewardCoins: 70,
+    id: 'q-mind-5',
+    title: 'เขียน Emotional Journal บันทึกความรู้สึกและอารมณ์ของวัน',
+    description: 'เขียนระบายและรับรู้อารมณ์ของตนเองอย่างซื่อสัตย์ รับฟังจิตใจและปล่อยวางความเหนื่อยล้า',
+    difficulty: 'medium',
+    category: 'mind',
+    rewardCoins: 30,
     completed: false,
-    targetCount: 40,
-    unit: 'นาที',
+    targetCount: 1,
+    unit: 'หน้า',
   },
 ];
 
@@ -151,7 +273,30 @@ export const questSlice = createSlice({
       });
     },
     setQuestsState: (state, action: PayloadAction<Quest[]>) => {
-      state.quests = action.payload;
+      const incomingQuests = action.payload || [];
+      const incomingMap = new Map(incomingQuests.map((q) => [q.id, q]));
+
+      // Smart Merge: ensure all INITIAL_QUESTS exist, preserve completion status & custom quests
+      const mergedQuests: Quest[] = INITIAL_QUESTS.map((initial) => {
+        if (incomingMap.has(initial.id)) {
+          const existing = incomingMap.get(initial.id)!;
+          incomingMap.delete(initial.id);
+          return {
+            ...initial,
+            completed: existing.completed ?? false,
+          };
+        }
+        return initial;
+      });
+
+      // Preserve any remaining custom quests created by the user
+      incomingMap.forEach((quest) => {
+        if (quest.isCustom) {
+          mergedQuests.push(quest);
+        }
+      });
+
+      state.quests = mergedQuests;
     },
   },
 });
