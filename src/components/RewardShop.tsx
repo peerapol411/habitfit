@@ -23,6 +23,7 @@ export default function RewardShop() {
   const dispatch = useAppDispatch();
   const { coins, totalCoinsEarned, rewards, tickets } = useAppSelector((state) => state.wallet);
   const [activeTab, setActiveTab] = useState<'shop' | 'tickets'>('shop');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'food' | 'leisure' | 'shopping' | 'rest'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const activeTickets = tickets.filter((t) => !t.isUsed);
@@ -48,12 +49,44 @@ export default function RewardShop() {
   };
 
   const categoryIcons: Record<string, string> = {
-    leisure: '🎬',
+    leisure: '🎮',
     food: '☕',
     rest: '🛌',
     shopping: '🛍️',
     custom: '🎁',
   };
+
+  const getRewardIcon = (reward: RewardItem) => {
+    if (reward.icon && /\p{Extended_Pictographic}/u.test(reward.icon)) {
+      return reward.icon;
+    }
+    const iconMap: Record<string, string> = {
+      tv: '🎬',
+      stream: '📺',
+      coffee: '☕',
+      drink: '🥤',
+      icecream: '🍦',
+      snack: '🍿',
+      latenight: '🌙',
+      bed: '🛌',
+      fastfood: '🍔',
+      gamepad: '🎮',
+      gamepass: '💎',
+      buffet: '🥩',
+      steam: '🕹️',
+      'shopping-bag': '🛍️',
+      gaminggear: '🎧',
+      shoes: '👟',
+      switch: '🌟',
+      gift: '🎁',
+    };
+    return iconMap[reward.icon] || categoryIcons[reward.category] || '🎁';
+  };
+
+  const filteredRewards = rewards.filter((r) => {
+    if (selectedCategory === 'all') return true;
+    return r.category === selectedCategory;
+  });
 
   return (
     <section className="space-y-5">
@@ -141,30 +174,81 @@ export default function RewardShop() {
         )}
       </div>
 
+      {/* Category Filter Pills */}
+      {activeTab === 'shop' && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+          {[
+            { id: 'all', label: 'ทั้งหมด', icon: '✨' },
+            { id: 'food', label: 'ของกิน & เครื่องดื่ม', icon: '☕' },
+            { id: 'leisure', label: 'เกม & บันเทิง', icon: '🎮' },
+            { id: 'shopping', label: 'ช้อปปิ้ง & ไอที', icon: '🛍️' },
+            { id: 'rest', label: 'พักผ่อน', icon: '🛌' },
+          ].map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                sound.playClick();
+                setSelectedCategory(cat.id as any);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                selectedCategory === cat.id
+                  ? 'bg-emerald-500 text-black shadow-sm'
+                  : 'bg-zinc-900/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800'
+              }`}
+            >
+              <span>{cat.icon}</span>
+              <span>{cat.label}</span>
+              <span className="text-[10px] opacity-70 font-mono">
+                (
+                {cat.id === 'all'
+                  ? rewards.length
+                  : rewards.filter((r) => r.category === cat.id).length}
+                )
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Tab: Shop Rewards */}
       {activeTab === 'shop' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {rewards.map((reward) => {
+          {filteredRewards.map((reward) => {
             const canAfford = coins >= reward.costCoins;
             const diffCoins = reward.costCoins - coins;
+            const isGrandTrophy = reward.id === 'rew-17' || reward.costCoins >= 3000;
 
             return (
               <div
                 key={reward.id}
-                className="group relative rounded-2xl bg-zinc-900/60 border border-zinc-800 p-5 hover:border-zinc-700 transition-all flex flex-col justify-between gap-4"
+                className={`group relative rounded-2xl border p-5 transition-all flex flex-col justify-between gap-4 ${
+                  isGrandTrophy
+                    ? 'bg-gradient-to-b from-amber-500/10 via-zinc-900/80 to-zinc-900/60 border-amber-500/30 hover:border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.06)]'
+                    : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-700'
+                }`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl p-2 rounded-xl bg-zinc-950 border border-zinc-800">
-                        {categoryIcons[reward.category] || '🎁'}
+                        {getRewardIcon(reward)}
                       </span>
                       <div>
-                        <h3 className="font-semibold text-white text-sm sm:text-base">
-                          {reward.title}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-white text-sm sm:text-base">
+                            {reward.title}
+                          </h3>
+                          {isGrandTrophy && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              <Sparkles className="w-3 h-3 text-amber-400" />
+                              บอสใหญ่
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-xs font-bold font-mono text-emerald-400">
+                          <span className={`text-xs font-bold font-mono ${
+                            isGrandTrophy ? 'text-amber-400' : 'text-emerald-400'
+                          }`}>
                             {reward.costCoins.toLocaleString()} Coins
                           </span>
                           {reward.timesRedeemed > 0 && (
@@ -218,6 +302,21 @@ export default function RewardShop() {
               </div>
             );
           })}
+
+          {filteredRewards.length === 0 && (
+            <div className="col-span-full text-center py-10 border border-dashed border-zinc-800 rounded-2xl">
+              <p className="text-sm text-zinc-400">ไม่พบของรางวัลในหมวดหมู่นี้</p>
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setSelectedCategory('all');
+                }}
+                className="mt-2 text-xs text-emerald-400 hover:underline font-medium"
+              >
+                ดูของรางวัลทั้งหมด
+              </button>
+            </div>
+          )}
         </div>
       )}
 
