@@ -25,6 +25,7 @@ import { setQuestsState, INITIAL_QUESTS } from '@/store/questSlice';
 import { setWalletState, INITIAL_REWARDS } from '@/store/walletSlice';
 import { setSettingsState, setPin } from '@/store/settingsSlice';
 import { setMetricsState } from '@/store/metricsSlice';
+import { getLocalTodayKey } from '@/lib/dateUtils';
 
 export default function Home() {
   const dispatch = useAppDispatch();
@@ -33,14 +34,27 @@ export default function Home() {
   const fullState = useAppSelector((state) => state);
 
   useEffect(() => {
-    const today = new Date();
-    const dateText = today.toLocaleDateString('th-TH', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-    setFormattedDate(dateText);
+    const updateDateText = () => {
+      const today = new Date();
+      const dateText = today.toLocaleDateString('th-TH', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      setFormattedDate(dateText);
+    };
+
+    updateDateText();
+    const interval = setInterval(updateDateText, 60000);
+    const handleVis = () => {
+      if (document.visibilityState === 'visible') updateDateText();
+    };
+    document.addEventListener('visibilitychange', handleVis);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVis);
+    };
   }, []);
 
   // Backup Export
@@ -102,8 +116,10 @@ export default function Home() {
       localStorage.clear();
       localStorage.setItem('habitfit_pin', newPin);
 
+      const today = getLocalTodayKey();
       const freshQuests = INITIAL_QUESTS.map((q) => ({ ...q, completed: false }));
-      dispatch(setQuestsState(freshQuests));
+      dispatch(setQuestsState({ quests: freshQuests, lastResetDate: today }));
+      localStorage.setItem('habitfit_last_reset_date', today);
       dispatch(
         setWalletState({
           coins: 0,

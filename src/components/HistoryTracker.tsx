@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { INITIAL_QUESTS } from '@/store/questSlice';
 import { sound } from '@/lib/audioService';
+import { getLocalTodayKey } from '@/lib/dateUtils';
 
 export default function HistoryTracker() {
   const { streak, history } = useAppSelector((state) => state.settings);
@@ -35,7 +36,7 @@ export default function HistoryTracker() {
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = getLocalTodayKey(d);
     const dayName = d.toLocaleDateString('th-TH', { weekday: 'short' });
     const dayFullName = d.toLocaleDateString('th-TH', { weekday: 'long' });
     const dayNum = d.getDate();

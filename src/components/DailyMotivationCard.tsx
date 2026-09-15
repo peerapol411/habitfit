@@ -10,8 +10,22 @@ export default function DailyMotivationCard() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    // Automatically select the quote of the day based on the calendar date
-    setQuote(getDailyQuote(new Date()));
+    const updateQuote = () => {
+      setQuote(getDailyQuote(new Date()));
+    };
+
+    updateQuote();
+
+    const interval = setInterval(updateQuote, 60000);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') updateQuote();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   if (!quote) return null;

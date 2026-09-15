@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { DailyHistory, Difficulty } from '@/types';
+import { getLocalTodayKey } from '@/lib/dateUtils';
 
 interface SettingsState {
   pin: string;
@@ -16,7 +17,7 @@ export function calculateStreak(history: Record<string, DailyHistory>): number {
   if (!history || Object.keys(history).length === 0) return 0;
 
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = getLocalTodayKey(today);
   const todayEntry = history[todayStr];
   const hasCompletedToday = todayEntry && (todayEntry.questsCompletedCount || 0) > 0;
 
@@ -30,7 +31,7 @@ export function calculateStreak(history: Record<string, DailyHistory>): number {
   let currentStreak = 0;
   // Maximum loop of 365 days to prevent any infinite loop
   for (let i = 0; i < 365; i++) {
-    const dStr = checkDate.toISOString().split('T')[0];
+    const dStr = getLocalTodayKey(checkDate);
     const entry = history[dStr];
     if (entry && (entry.questsCompletedCount || 0) > 0) {
       currentStreak += 1;
@@ -134,6 +135,13 @@ export const settingsSlice = createSlice({
     checkAndProcessStreak: (state) => {
       state.streak = calculateStreak(state.history);
     },
+    clearTodayHistory: (state, action: PayloadAction<string | undefined>) => {
+      const today = action.payload || getLocalTodayKey();
+      if (state.history[today]) {
+        delete state.history[today];
+      }
+      state.streak = calculateStreak(state.history);
+    },
     setSettingsState: (
       state,
       action: PayloadAction<{
@@ -161,6 +169,7 @@ export const {
   checkAndProcessStreak,
   recordDailyHistory,
   removeDailyHistory,
+  clearTodayHistory,
   setSettingsState,
 } = settingsSlice.actions;
 

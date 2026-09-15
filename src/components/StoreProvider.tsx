@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store/store';
-import { setQuestsState, resetDailyQuests } from '@/store/questSlice';
+import { setQuestsState, resetDailyQuests, checkAndResetForDate, forceResetQuestsForToday } from '@/store/questSlice';
 import { setWalletState } from '@/store/walletSlice';
 import { setMetricsState } from '@/store/metricsSlice';
 import { 
@@ -15,12 +15,14 @@ import {
   setSettingsState
 } from '@/store/settingsSlice';
 import { sound } from '@/lib/audioService';
+import { getLocalTodayKey, isDateBefore } from '@/lib/dateUtils';
 import { Quest, RewardItem, RedeemedTicket, DailyHistory, BodyMetricRecord } from '@/types';
 
 function serializeBusinessData(state: any): string {
   if (!state) return '';
   return JSON.stringify({
     q: (state.quest?.quests || []).map((q: any) => [q.id, q.completed]),
+    qd: state.quest?.lastResetDate,
     c: state.wallet?.coins,
     e: state.wallet?.totalCoinsEarned,
     t: (state.wallet?.tickets || []).map((t: any) => [t.id, t.isUsed]),
@@ -42,6 +44,8 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
     if (isHydrated.current) return;
     isHydrated.current = true;
 
+    const today = getLocalTodayKey();
+
     // 1. Hydrate from LocalStorage
     let activePin = '';
     try {
@@ -61,15 +65,7 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
       }
       store.dispatch(setPin(activePin));
 
-      const savedQuests = localStorage.getItem('habitfit_quests');
-      if (savedQuests) {
-        store.dispatch(setQuestsState(JSON.parse(savedQuests)));
-      }
-
-      const savedWallet = localStorage.getItem('habitfit_wallet');
-      if (savedWallet) {
-        store.dispatch(setWalletState(JSON.parse(savedWallet)));
-      }
+      let todayCompletedQuestIds: string[] = [];
 
       const savedSettings = localStorage.getItem('habitfit_settings');
       if (savedSettings) {
@@ -86,6 +82,9 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
         if (hasMockStructure) {
           cleanHistory = {};
         }
+        if (cleanHistory[today]?.completedQuestIds) {
+          todayCompletedQuestIds = cleanHistory[today].completedQuestIds;
+        }
         store.dispatch(
           setSettingsState({
             pin: activePin,
@@ -94,6 +93,31 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
             history: cleanHistory,
           })
         );
+      }
+
+      const savedQuests = localStorage.getItem('habitfit_quests');
+      const savedLastResetDate = localStorage.getItem('habitfit_last_reset_date') || '';
+      if (savedQuests) {
+        store.dispatch(
+          setQuestsState({
+            quests: JSON.parse(savedQuests),
+            lastResetDate: savedLastResetDate,
+          })
+        );
+      }
+
+      // Automatically check and reset quests for today
+      store.dispatch(
+        checkAndResetForDate({
+          todayDate: today,
+          completedQuestIds: todayCompletedQuestIds,
+        })
+      );
+      localStorage.setItem('habitfit_last_reset_date', today);
+
+      const savedWallet = localStorage.getItem('habitfit_wallet');
+      if (savedWallet) {
+        store.dispatch(setWalletState(JSON.parse(savedWallet)));
       }
 
       const savedMetrics = localStorage.getItem('habitfit_metrics');
@@ -157,19 +181,10 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
               isApplyingRemoteUpdate.current = true;
 
               try {
-                if (data.quests) store.dispatch(setQuestsState(data.quests as Quest[]));
-                if (data.coins !== undefined) {
-                  store.dispatch(
-                    setWalletState({
-                      coins: data.coins,
-                      totalCoinsEarned: data.totalCoinsEarned || data.coins,
-                      rewards: data.rewards || [],
-                      tickets: data.tickets || [],
-                    })
-                  );
-                }
+                const currentToday = getLocalTodayKey();
+
+                let cleanServerHistory = data.history || {};
                 if (data.history) {
-                  let cleanServerHistory = data.history || {};
                   const sEntries = Object.values(cleanServerHistory) as DailyHistory[];
                   if (
                     sEntries.some(
@@ -186,8 +201,46 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
                     setSettingsState({
                       pin: data.pin,
                       streak: 0,
-                      lastActiveDate: data.lastActiveDate || new Date().toISOString().split('T')[0],
+                      lastActiveDate: data.lastActiveDate || currentToday,
                       history: cleanServerHistory,
+                    })
+                  );
+                }
+
+                if (data.quests) {
+                  const serverTodayCompleted = cleanServerHistory[currentToday]?.completedQuestIds || [];
+                  const isServerPastDate = isDateBefore(data.lastActiveDate, currentToday);
+
+                  store.dispatch(setQuestsState(data.quests as Quest[]));
+                  if (isServerPastDate) {
+                    // Server data is from a past date: reset all quests for today
+                    store.dispatch(
+                      checkAndResetForDate({
+                        todayDate: currentToday,
+                        completedQuestIds: serverTodayCompleted,
+                      })
+                    );
+                  } else {
+                    // Server data is from today: sync completed quests
+                    store.dispatch(
+                      checkAndResetForDate({
+                        todayDate: currentToday,
+                        completedQuestIds:
+                          serverTodayCompleted.length > 0
+                            ? serverTodayCompleted
+                            : (data.quests as Quest[]).filter((q) => q.completed).map((q) => q.id),
+                      })
+                    );
+                  }
+                }
+
+                if (data.coins !== undefined) {
+                  store.dispatch(
+                    setWalletState({
+                      coins: data.coins,
+                      totalCoinsEarned: data.totalCoinsEarned || data.coins,
+                      rewards: data.rewards || [],
+                      tickets: data.tickets || [],
                     })
                   );
                 }
@@ -259,18 +312,41 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
         .catch(() => {});
     };
 
+    // Midnight Rollover Watcher (automatically resets quests when date changes)
+    const checkMidnightRollover = () => {
+      const currentToday = getLocalTodayKey();
+      const state = store.getState();
+      if (state.quest.lastResetDate && state.quest.lastResetDate !== currentToday) {
+        const todayCompleted = state.settings.history[currentToday]?.completedQuestIds || [];
+        store.dispatch(
+          checkAndResetForDate({
+            todayDate: currentToday,
+            completedQuestIds: todayCompleted,
+          })
+        );
+        store.dispatch(checkAndProcessStreak());
+        localStorage.setItem('habitfit_last_reset_date', currentToday);
+        sound.playComplete();
+      }
+    };
+
     // Initial sync
     checkServerSync();
 
     // Heartbeat Polling Loop (every 2.5 seconds)
     const heartbeatInterval = setInterval(() => {
+      checkMidnightRollover();
       checkServerSync();
     }, 2500);
 
     // Sync on tab focus & visibility change
-    const handleFocus = () => checkServerSync();
+    const handleFocus = () => {
+      checkMidnightRollover();
+      checkServerSync();
+    };
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
+        checkMidnightRollover();
         checkServerSync();
         store.dispatch(checkAndProcessStreak());
       }
@@ -285,6 +361,7 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
       const state = store.getState();
       try {
         localStorage.setItem('habitfit_quests', JSON.stringify(state.quest.quests));
+        localStorage.setItem('habitfit_last_reset_date', state.quest.lastResetDate || getLocalTodayKey());
         localStorage.setItem(
           'habitfit_wallet',
           JSON.stringify({

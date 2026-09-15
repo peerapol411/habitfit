@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Quest } from '@/types';
+import { getLocalTodayKey } from '@/lib/dateUtils';
 
 export const INITIAL_QUESTS: Quest[] = [
   // ---------------- 1. 🏃 ออกกำลังกาย & บอดี้เวท (FITNESS) ----------------
@@ -233,10 +234,12 @@ export const INITIAL_QUESTS: Quest[] = [
 
 interface QuestState {
   quests: Quest[];
+  lastResetDate: string;
 }
 
 const initialState: QuestState = {
   quests: INITIAL_QUESTS,
+  lastResetDate: '',
 };
 
 export const questSlice = createSlice({
@@ -268,12 +271,44 @@ export const questSlice = createSlice({
       state.quests = state.quests.filter((q) => q.id !== action.payload);
     },
     resetDailyQuests: (state) => {
+      state.lastResetDate = getLocalTodayKey();
       state.quests.forEach((q) => {
         q.completed = false;
       });
     },
-    setQuestsState: (state, action: PayloadAction<Quest[]>) => {
-      const incomingQuests = action.payload || [];
+    checkAndResetForDate: (
+      state,
+      action: PayloadAction<{ todayDate: string; completedQuestIds?: string[] }>
+    ) => {
+      const { todayDate, completedQuestIds = [] } = action.payload;
+      if (state.lastResetDate !== todayDate) {
+        state.lastResetDate = todayDate;
+        const todaySet = new Set(completedQuestIds);
+        state.quests.forEach((q) => {
+          q.completed = todaySet.has(q.id);
+        });
+      }
+    },
+    forceResetQuestsForToday: (state) => {
+      state.lastResetDate = getLocalTodayKey();
+      state.quests.forEach((q) => {
+        q.completed = false;
+      });
+    },
+    setQuestsState: (
+      state,
+      action: PayloadAction<Quest[] | { quests: Quest[]; lastResetDate?: string }>
+    ) => {
+      let incomingQuests: Quest[] = [];
+      if (Array.isArray(action.payload)) {
+        incomingQuests = action.payload;
+      } else if (action.payload && action.payload.quests) {
+        incomingQuests = action.payload.quests;
+        if (action.payload.lastResetDate) {
+          state.lastResetDate = action.payload.lastResetDate;
+        }
+      }
+
       const incomingMap = new Map(incomingQuests.map((q) => [q.id, q]));
 
       // Smart Merge: ensure all INITIAL_QUESTS exist, preserve completion status & custom quests
@@ -307,6 +342,8 @@ export const {
   editQuest,
   deleteQuest,
   resetDailyQuests,
+  checkAndResetForDate,
+  forceResetQuestsForToday,
   setQuestsState,
 } = questSlice.actions;
 

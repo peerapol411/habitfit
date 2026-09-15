@@ -1,17 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAppSelector } from '@/store/store';
+import { useAppSelector, useAppDispatch } from '@/store/store';
+import { forceResetQuestsForToday } from '@/store/questSlice';
 import QuestCard from './QuestCard';
 import QuestModal from './QuestModal';
 import { sound } from '@/lib/audioService';
-import { Plus, CheckCircle2, ListFilter, Sparkles } from 'lucide-react';
+import { Plus, CheckCircle2, ListFilter, Sparkles, RotateCcw } from 'lucide-react';
 
 export default function QuestList() {
+  const dispatch = useAppDispatch();
   const { quests } = useAppSelector((state) => state.quest);
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'fitness' | 'learning' | 'health' | 'mind'>('all');
   const [filter, setFilter] = useState<'all' | 'easy' | 'medium' | 'hard' | 'completed'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [resetToast, setResetToast] = useState('');
 
   const completedCount = quests.filter((q) => q.completed).length;
   const totalCount = quests.length;
@@ -41,18 +44,36 @@ export default function QuestList() {
 
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  const handleManualReset = () => {
+    if (
+      confirm(
+        'คุณต้องการรีเซ็ตเควสต์ประจำวันสำหรับวันนี้ใช่หรือไม่?\n\n' +
+        '• เควสต์ทั้งหมดจะกลับมาเป็นยังไม่เสร็จ (0%)\n' +
+        '• เหรียญที่ได้รับไปแล้ว และสถิติในอดีตจะยังคงอยู่ครบถ้วน 100%'
+      )
+    ) {
+      sound.playClick();
+      dispatch(forceResetQuestsForToday());
+      setResetToast('รีเซ็ตเควสต์ประจำวันเรียบร้อยแล้ว พร้อมลุยใหม่! 🌅');
+      setTimeout(() => setResetToast(''), 3500);
+    }
+  };
+
   return (
     <section className="space-y-5">
       {/* Header & Progress Banner */}
       <div className="rounded-2xl bg-zinc-900/60 border border-zinc-800 p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
                 ภารกิจและนิสัยประจำวัน (4 มิติชีวิต)
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                 {completedCount}/{totalCount} เสร็จสิ้น
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">
+                รีเซ็ตทุกเที่ยงคืน 🌙
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-1">
@@ -60,18 +81,35 @@ export default function QuestList() {
             </p>
           </div>
 
-          {/* Action button */}
-          <button
-            onClick={() => {
-              sound.playClick();
-              setIsModalOpen(true);
-            }}
-            className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold transition-all shadow-sm shrink-0 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>สร้างเควสต์เพิ่ม</span>
-          </button>
+          {/* Action buttons */}
+          <div className="self-start sm:self-auto flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleManualReset}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-medium transition-all border border-zinc-700/60 shadow-sm cursor-pointer"
+              title="รีเซ็ตเควสต์ทั้งหมดสำหรับวันนี้เพื่อเริ่มต้นใหม่"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-zinc-400" />
+              <span>รีเซ็ตวันนี้</span>
+            </button>
+            <button
+              onClick={() => {
+                sound.playClick();
+                setIsModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold transition-all shadow-sm shrink-0 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>สร้างเควสต์เพิ่ม</span>
+            </button>
+          </div>
         </div>
+
+        {resetToast && (
+          <div className="mt-3 px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2 animate-fade-in">
+            <span>✨</span>
+            <span>{resetToast}</span>
+          </div>
+        )}
 
         {/* Minimalist Progress Bar */}
         <div className="mt-5 space-y-2">

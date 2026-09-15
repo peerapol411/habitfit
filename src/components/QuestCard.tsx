@@ -7,6 +7,7 @@ import { toggleQuest, deleteQuest } from '@/store/questSlice';
 import { addCoins, subtractCoins } from '@/store/walletSlice';
 import { recordDailyHistory, removeDailyHistory } from '@/store/settingsSlice';
 import { sound } from '@/lib/audioService';
+import { getLocalTodayKey } from '@/lib/dateUtils';
 import { Check, Coins, Trash2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -19,7 +20,7 @@ export default function QuestCard({ quest, onEdit }: QuestCardProps) {
   const dispatch = useAppDispatch();
 
   const handleToggle = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalTodayKey();
     if (!quest.completed) {
       sound.playComplete();
       dispatch(toggleQuest(quest.id));
