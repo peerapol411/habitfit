@@ -281,13 +281,18 @@ export const questSlice = createSlice({
       action: PayloadAction<{ todayDate: string; completedQuestIds?: string[] }>
     ) => {
       const { todayDate, completedQuestIds = [] } = action.payload;
-      if (state.lastResetDate !== todayDate) {
-        state.lastResetDate = todayDate;
-        const todaySet = new Set(completedQuestIds);
-        state.quests.forEach((q) => {
-          q.completed = todaySet.has(q.id);
-        });
-      }
+      state.lastResetDate = todayDate;
+      const todaySet = new Set(completedQuestIds);
+      state.quests.forEach((q) => {
+        q.completed = todaySet.has(q.id);
+      });
+    },
+    syncQuestsWithTodayHistory: (state, action: PayloadAction<string[]>) => {
+      const todaySet = new Set(action.payload);
+      state.lastResetDate = getLocalTodayKey();
+      state.quests.forEach((q) => {
+        q.completed = todaySet.has(q.id);
+      });
     },
     forceResetQuestsForToday: (state) => {
       state.lastResetDate = getLocalTodayKey();
@@ -297,9 +302,18 @@ export const questSlice = createSlice({
     },
     setQuestsState: (
       state,
-      action: PayloadAction<Quest[] | { quests: Quest[]; lastResetDate?: string }>
+      action: PayloadAction<
+        | Quest[]
+        | {
+            quests: Quest[];
+            lastResetDate?: string;
+            todayCompletedQuestIds?: string[];
+          }
+      >
     ) => {
       let incomingQuests: Quest[] = [];
+      let todayCompletedSet: Set<string> | null = null;
+
       if (Array.isArray(action.payload)) {
         incomingQuests = action.payload;
       } else if (action.payload && action.payload.quests) {
@@ -307,27 +321,44 @@ export const questSlice = createSlice({
         if (action.payload.lastResetDate) {
           state.lastResetDate = action.payload.lastResetDate;
         }
+        if (action.payload.todayCompletedQuestIds !== undefined) {
+          todayCompletedSet = new Set(action.payload.todayCompletedQuestIds);
+        }
       }
 
       const incomingMap = new Map(incomingQuests.map((q) => [q.id, q]));
 
-      // Smart Merge: ensure all INITIAL_QUESTS exist, preserve completion status & custom quests
+      // Smart Merge: ensure all INITIAL_QUESTS exist, synchronize completion with today's history
       const mergedQuests: Quest[] = INITIAL_QUESTS.map((initial) => {
-        if (incomingMap.has(initial.id)) {
-          const existing = incomingMap.get(initial.id)!;
+        const existing = incomingMap.get(initial.id);
+        if (existing) {
           incomingMap.delete(initial.id);
+          const isCompleted =
+            todayCompletedSet !== null
+              ? todayCompletedSet.has(initial.id)
+              : (existing.completed ?? false);
           return {
             ...initial,
-            completed: existing.completed ?? false,
+            completed: isCompleted,
           };
         }
-        return initial;
+        return {
+          ...initial,
+          completed: todayCompletedSet !== null ? todayCompletedSet.has(initial.id) : false,
+        };
       });
 
       // Preserve any remaining custom quests created by the user
       incomingMap.forEach((quest) => {
         if (quest.isCustom) {
-          mergedQuests.push(quest);
+          const isCompleted =
+            todayCompletedSet !== null
+              ? todayCompletedSet.has(quest.id)
+              : (quest.completed ?? false);
+          mergedQuests.push({
+            ...quest,
+            completed: isCompleted,
+          });
         }
       });
 
@@ -343,6 +374,7 @@ export const {
   deleteQuest,
   resetDailyQuests,
   checkAndResetForDate,
+  syncQuestsWithTodayHistory,
   forceResetQuestsForToday,
   setQuestsState,
 } = questSlice.actions;

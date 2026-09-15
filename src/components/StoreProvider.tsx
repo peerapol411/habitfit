@@ -96,23 +96,23 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
       }
 
       const savedQuests = localStorage.getItem('habitfit_quests');
-      const savedLastResetDate = localStorage.getItem('habitfit_last_reset_date') || '';
       if (savedQuests) {
         store.dispatch(
           setQuestsState({
             quests: JSON.parse(savedQuests),
-            lastResetDate: savedLastResetDate,
+            lastResetDate: today,
+            todayCompletedQuestIds: todayCompletedQuestIds,
+          })
+        );
+      } else {
+        store.dispatch(
+          setQuestsState({
+            quests: [],
+            lastResetDate: today,
+            todayCompletedQuestIds: todayCompletedQuestIds,
           })
         );
       }
-
-      // Automatically check and reset quests for today
-      store.dispatch(
-        checkAndResetForDate({
-          todayDate: today,
-          completedQuestIds: todayCompletedQuestIds,
-        })
-      );
       localStorage.setItem('habitfit_last_reset_date', today);
 
       const savedWallet = localStorage.getItem('habitfit_wallet');
@@ -209,29 +209,14 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
 
                 if (data.quests) {
                   const serverTodayCompleted = cleanServerHistory[currentToday]?.completedQuestIds || [];
-                  const isServerPastDate = isDateBefore(data.lastActiveDate, currentToday);
 
-                  store.dispatch(setQuestsState(data.quests as Quest[]));
-                  if (isServerPastDate) {
-                    // Server data is from a past date: reset all quests for today
-                    store.dispatch(
-                      checkAndResetForDate({
-                        todayDate: currentToday,
-                        completedQuestIds: serverTodayCompleted,
-                      })
-                    );
-                  } else {
-                    // Server data is from today: sync completed quests
-                    store.dispatch(
-                      checkAndResetForDate({
-                        todayDate: currentToday,
-                        completedQuestIds:
-                          serverTodayCompleted.length > 0
-                            ? serverTodayCompleted
-                            : (data.quests as Quest[]).filter((q) => q.completed).map((q) => q.id),
-                      })
-                    );
-                  }
+                  store.dispatch(
+                    setQuestsState({
+                      quests: data.quests as Quest[],
+                      lastResetDate: currentToday,
+                      todayCompletedQuestIds: serverTodayCompleted,
+                    })
+                  );
                 }
 
                 if (data.coins !== undefined) {

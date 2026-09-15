@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '@/store/store';
 import { forceResetQuestsForToday } from '@/store/questSlice';
+import { clearTodayHistory } from '@/store/settingsSlice';
 import QuestCard from './QuestCard';
 import QuestModal from './QuestModal';
 import { sound } from '@/lib/audioService';
@@ -49,11 +50,12 @@ export default function QuestList() {
       confirm(
         'คุณต้องการรีเซ็ตเควสต์ประจำวันสำหรับวันนี้ใช่หรือไม่?\n\n' +
         '• เควสต์ทั้งหมดจะกลับมาเป็นยังไม่เสร็จ (0%)\n' +
-        '• เหรียญที่ได้รับไปแล้ว และสถิติในอดีตจะยังคงอยู่ครบถ้วน 100%'
+        '• เหรียญที่ได้รับไปแล้ว และสถิติของวันก่อนๆ จะยังคงอยู่ครบถ้วน 100%'
       )
     ) {
       sound.playClick();
       dispatch(forceResetQuestsForToday());
+      dispatch(clearTodayHistory());
       setResetToast('รีเซ็ตเควสต์ประจำวันเรียบร้อยแล้ว พร้อมลุยใหม่! 🌅');
       setTimeout(() => setResetToast(''), 3500);
     }
